@@ -1,7 +1,6 @@
 ﻿using AtencionUsuarios.Services.OpenAi;
 using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 //holaagitque tal
 
@@ -70,6 +69,7 @@ namespace OpenDataSigAPI.Controllers
             var run = await _openAiService.CreateRunAsync(request, threadId);
             return Ok(run);
         }
+
 
         [HttpGet("retrieveRun/{threadId}/{runId}")]
         public async Task<IActionResult> RetrieveRun(String OpenAI_ApiKey, string threadId, string runId)
