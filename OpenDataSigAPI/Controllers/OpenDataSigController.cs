@@ -3,6 +3,8 @@ using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
+//holaagitque tal
+
 namespace OpenDataSigAPI.Controllers
 {
     [ApiController]
