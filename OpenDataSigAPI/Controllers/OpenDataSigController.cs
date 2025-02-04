@@ -1,6 +1,7 @@
 ﻿using AtencionUsuarios.Services.OpenAi;
 using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace OpenDataSigAPI.Controllers
 {
@@ -72,7 +73,14 @@ namespace OpenDataSigAPI.Controllers
         public async Task<IActionResult> RetrieveRun(String OpenAI_ApiKey, string threadId, string runId)
         {
             var run = await _openAiService.RetrieveRunAsync(threadId, runId);
-            return run != null ? Ok(run) : NotFound(new { error = "Run no encontrado" });
+            if(run != null)
+            {
+                return Ok(run);
+            }
+            else
+            {
+                return NotFound(new { error = "Run no encontrado" });
+            }
         }
 
         [HttpPost("createMessage/{threadId}")]
@@ -91,14 +99,30 @@ namespace OpenDataSigAPI.Controllers
         public async Task<IActionResult> RetrieveMessage(String OpenAI_ApiKey, string threadId, string messageId)
         {
             var message = await _openAiService.RetrieveMessageAsync(threadId, messageId);
-            return message != null ? Ok(message) : NotFound(new { error = "Mensaje no encontrado" });
+
+            if (message != null)
+            {
+                return Ok(message);
+            }
+            else
+            {
+                return NotFound(new { error = "Mensaje no encontrado" });
+            }
         }
 
         [HttpGet("listMessages/{threadId}")]
         public async Task<IActionResult> ListMessages(String OpenAI_ApiKey, string threadId, int limit, String order, String after, String before)
         {
             var messages = await _openAiService.ListMessageAsync(threadId, limit, order, after, before);
-            return messages != null ? Ok(messages.Messages) : NotFound(new { error = "No hay mensajes en el hilo." });
+
+            if (messages != null)
+            {
+                return Ok(messages);
+            }
+            else
+            {
+                return NotFound(new { error = "No hay mensajes en el hilo." });
+            }
         }
     }
 }
