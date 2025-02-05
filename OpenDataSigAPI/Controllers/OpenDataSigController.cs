@@ -2,7 +2,6 @@
 using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
 
-//holaagitque tal
 
 namespace OpenDataSigAPI.Controllers
 {
@@ -31,18 +30,7 @@ namespace OpenDataSigAPI.Controllers
         }
 
 
-        [HttpPost("createThread")]
-        public async Task<IActionResult> CreateThread(String OpenAI_ApiKey, [FromBody] CreateThread request)
-        {
-            if (request == null)
-            {
-                return BadRequest("No se han enviado datos");
-            }
-
-            var thread = await _openAiService.CreateThreadAsync(request);
-            return Ok(thread);
-        }
-
+       
         [HttpGet("retrieveThread/{threadId}")]
         public async Task<IActionResult> RetrieveThread(String OpenAI_ApiKey, string threadId)
         {
@@ -125,6 +113,26 @@ namespace OpenDataSigAPI.Controllers
             {
                 return NotFound(new { error = "No hay mensajes en el hilo." });
             }
+            
         }
-    }
-}
+         [HttpPost("SubmitToolOutputs/{threadId}/{runId}")]
+        public async Task<IActionResult> SubmitToolOutputs(
+            [FromRoute] string threadId,                                     // <-- Path parameter
+            [FromRoute] string runId,                                        // <-- Path parameter
+            [FromHeader(Name = "OpenAi-ApiKey")] string openAiApiKey,        // <-- Header parameter
+            [FromBody] SubmitToolOutputs request)                            // <-- Body (JSON)
+        {
+            if (request == null || request.ToolOutputs == null || !request.ToolOutputs.Any())
+            {
+                return BadRequest("No se han enviado datos o la lista de tool_outputs está vacía.");
+            }
+
+        
+            var result = await _openAiService.SubmitToolOutputsAsync(request, threadId, runId);
+
+            return Ok(result);
+                        }
+                    }
+                }
+            
+
