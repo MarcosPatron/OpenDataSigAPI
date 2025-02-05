@@ -154,6 +154,9 @@ namespace AtencionUsuarios.Services.OpenAi
                 throw;
             }
         }
+
+
+
         //RUNS
         public async Task<Run> CreateRunAsync(CreateRun request, string threadId)
         {
