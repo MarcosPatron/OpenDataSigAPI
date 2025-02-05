@@ -1,6 +1,9 @@
 ﻿using AtencionUsuarios.Services.OpenAi;
 using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -10,15 +13,16 @@ namespace OpenDataSigAPI.Controllers
     public class OpenDataSigController : Controller
     {
         private readonly IOpenAiService _openAiService;
+        private readonly IConfiguration _configuration;
 
-        public OpenDataSigController( IOpenAiService openAiService)
+        public OpenDataSigController( IOpenAiService openAiService, IConfiguration configuration)
         {
             _openAiService = openAiService;
+            _configuration = configuration;
         }
 
-
         [HttpPost("createThreadAndRun")]
-        public async Task<IActionResult> CreateThreadAndRun(String OpenAI_ApiKey, [FromBody] CreateThreadAndRun request)
+        public async Task<IActionResult> CreateThreadAndRun(string OpenAI_ApiKey, [FromBody] CreateThreadAndRun request)
         {
             if (request == null)
             {
@@ -29,25 +33,47 @@ namespace OpenDataSigAPI.Controllers
             return Ok(threadAndRun);
         }
 
-
-       
-        [HttpGet("retrieveThread/{threadId}")]
-        public async Task<IActionResult> RetrieveThread(String OpenAI_ApiKey, string threadId)
+        [HttpPost("createThread")]
+        public async Task<IActionResult> CreateThread(string OpenAI_ApiKey, [FromBody] CreateThread request)
         {
-            var thread = await _openAiService.RetrieveTheadAsync(threadId);
-
-            if (thread != null)
+            if (request == null)
             {
-                return Ok(thread);
+                return BadRequest("No se han enviado datos");
             }
-            else
+
+            var thread = await _openAiService.CreateThreadAsync(request);
+            return Ok(thread);
+        }
+        
+        [HttpGet("retrieveThread/{threadId}")]
+        public async Task<IActionResult> RetrieveThread(string OpenAI_ApiKey, string threadId)
+        {
+            if (string.IsNullOrWhiteSpace(OpenAI_ApiKey))
             {
-                return NotFound(new { error = "Hilo no encontrado" });
+                return BadRequest("No se ha enviado ninguna API Key.");
+            }
+            try
+            {
+                var thread = await _openAiService.RetrieveTheadAsync(threadId);
+
+                if (thread != null)
+                {
+                    return Ok(thread);
+                }
+                else
+                {
+                    return NotFound(new { error = "Hilo no encontrado" });
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Error al recuperar el hilo: {e.Message}");
             }
         }
 
+
         [HttpPost("createRun/{threadId}")]
-        public async Task<IActionResult> CreateRun(String OpenAI_ApiKey, [FromBody] CreateRun request, string threadId)
+        public async Task<IActionResult> CreateRun(string OpenAI_ApiKey, [FromBody] CreateRun request, string threadId)
         {
             if (request == null)
             {
@@ -60,7 +86,7 @@ namespace OpenDataSigAPI.Controllers
 
 
         [HttpGet("retrieveRun/{threadId}/{runId}")]
-        public async Task<IActionResult> RetrieveRun(String OpenAI_ApiKey, string threadId, string runId)
+        public async Task<IActionResult> RetrieveRun(string OpenAI_ApiKey, string threadId, string runId)
         {
             var run = await _openAiService.RetrieveRunAsync(threadId, runId);
             if(run != null)
@@ -74,7 +100,7 @@ namespace OpenDataSigAPI.Controllers
         }
 
         [HttpPost("createMessage/{threadId}")]
-        public async Task<IActionResult> CreateMessage(String OpenAI_ApiKey, [FromBody] CreateMessage request, string threadId)
+        public async Task<IActionResult> CreateMessage(string OpenAI_ApiKey, [FromBody] CreateMessage request, string threadId)
         {
             if (request == null)
             {
@@ -86,7 +112,7 @@ namespace OpenDataSigAPI.Controllers
         }
 
         [HttpGet("retrieveMessage/{threadId}/{messageId}")]
-        public async Task<IActionResult> RetrieveMessage(String OpenAI_ApiKey, string threadId, string messageId)
+        public async Task<IActionResult> RetrieveMessage(string OpenAI_ApiKey, string threadId, string messageId)
         {
             var message = await _openAiService.RetrieveMessageAsync(threadId, messageId);
 
@@ -100,8 +126,8 @@ namespace OpenDataSigAPI.Controllers
             }
         }
 
-        [HttpGet("listMessages/{threadId}")]
-        public async Task<IActionResult> ListMessages(String OpenAI_ApiKey, string threadId, int limit, String order, String after, String before)
+        [HttpGet("listMessage/{threadId}")]
+        public async Task<IActionResult> ListMessage(string OpenAI_ApiKey, string threadId, int limit, string order, string after, string before)
         {
             var messages = await _openAiService.ListMessageAsync(threadId, limit, order, after, before);
 
