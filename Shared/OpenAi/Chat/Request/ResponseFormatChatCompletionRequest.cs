@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace AtencionUsuarios.Shared.Models.OpenAi.Chat.Request
+namespace OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request
 {
     public class ResponseFormatChatCompletionRequest
     {

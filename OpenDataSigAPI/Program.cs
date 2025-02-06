@@ -1,4 +1,4 @@
-using AtencionUsuarios.Services.OpenAi;
+using OpenDataSigAPI.Services.OpenAi;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 
-namespace AtencionUsuarios.Shared.Models.OpenAi.Chat.Response
+namespace OpenDataSigAPI.Shared.Models.OpenAi.Chat.Response
 {
     public class ChoiceChatCompletionResponse
     {

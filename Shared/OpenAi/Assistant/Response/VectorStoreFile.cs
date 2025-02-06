@@ -1,4 +1,4 @@
-﻿using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Response;
+﻿using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Shared.Models.OpenAi.Assistant.Request;
 using System.Text.Json.Serialization;
 

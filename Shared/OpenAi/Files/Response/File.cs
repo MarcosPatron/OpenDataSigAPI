@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AtencionUsuarios.Shared.Models.OpenAi.Files.Response
+namespace OpenDataSigAPI.Shared.Models.OpenAi.Files.Response
 {
     public class File
     {
