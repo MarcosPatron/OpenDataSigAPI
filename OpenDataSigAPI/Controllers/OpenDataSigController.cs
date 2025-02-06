@@ -1,9 +1,6 @@
-﻿using AtencionUsuarios.Services.OpenAi;
-using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
+﻿using OpenDataSigAPI.Services.OpenAi;
+using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -127,7 +124,7 @@ namespace OpenDataSigAPI.Controllers
         }
 
         [HttpGet("listMessage/{threadId}")]
-        public async Task<IActionResult> ListMessage(string OpenAI_ApiKey, string threadId, int limit, string order, string after, string before)
+        public async Task<IActionResult> ListMessage(string OpenAI_ApiKey, string threadId, int? limit, string? order, string? after, string? before)
         {
             var messages = await _openAiService.ListMessageAsync(threadId, limit, order, after, before);
 
@@ -143,10 +140,10 @@ namespace OpenDataSigAPI.Controllers
         }
          [HttpPost("SubmitToolOutputs/{threadId}/{runId}")]
         public async Task<IActionResult> SubmitToolOutputs(
-            [FromRoute] string threadId,                                     // <-- Path parameter
-            [FromRoute] string runId,                                        // <-- Path parameter
-            [FromHeader(Name = "OpenAi-ApiKey")] string openAiApiKey,        // <-- Header parameter
-            [FromBody] SubmitToolOutputs request)                            // <-- Body (JSON)
+            [FromRoute] string threadId,                                   
+            [FromRoute] string runId,                                       
+            [FromHeader(Name = "OpenAi-ApiKey")] string openAiApiKey,        
+            [FromBody] SubmitToolOutputs request)                            
         {
             if (request == null || request.ToolOutputs == null || !request.ToolOutputs.Any())
             {

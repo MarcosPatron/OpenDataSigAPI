@@ -1,4 +1,4 @@
-﻿namespace AtencionUsuarios.Shared.Models.OpenAi.Assistant.Response
+﻿namespace OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response
 {
     public class AssistantFile
     {

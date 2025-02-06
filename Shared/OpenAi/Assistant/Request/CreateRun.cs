@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request
+namespace OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request
 {
     public class CreateRun
     {

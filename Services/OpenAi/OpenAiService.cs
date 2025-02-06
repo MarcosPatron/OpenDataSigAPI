@@ -2,15 +2,17 @@
 using System.Text.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
-using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Response;
-using AtencionUsuarios.Shared.Models.OpenAi.Chat.Request;
-using AtencionUsuarios.Shared.Models.OpenAi.Chat.Response;
-using AtencionUsuarios.Shared.Models.OpenAi.Files.Request;
+using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
+using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Shared.Models.OpenAi.Assistant.Request;
 using Shared.Models.OpenAi.Assistant.Response;
+using Thread = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.Thread;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Response;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request;
+using File = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.File;
+using OpenDataSigAPI.Shared.Models.OpenAi.Files.Request;
 
-namespace AtencionUsuarios.Services.OpenAi
+namespace OpenDataSigAPI.Services.OpenAi
 {
     public class OpenAiService : IOpenAiService
     {
@@ -114,7 +116,7 @@ namespace AtencionUsuarios.Services.OpenAi
             }
         }
 
-        public async Task<Shared.Models.OpenAi.Assistant.Response.Thread> CreateThreadAsync(CreateThread request)
+        public async Task<Thread> CreateThreadAsync(CreateThread request)
         {
             try
             {
@@ -127,7 +129,7 @@ namespace AtencionUsuarios.Services.OpenAi
 
                     var response = await httpClient.PostAsync(apiEndpoint, content);
 
-                    return await ProccessResponse<Shared.Models.OpenAi.Assistant.Response.Thread>(response);
+                    return await ProccessResponse<Thread>(response);
                 }
             }
             catch (Exception)
@@ -136,7 +138,7 @@ namespace AtencionUsuarios.Services.OpenAi
             }
         }
 
-        public async Task<Shared.Models.OpenAi.Assistant.Response.Thread> RetrieveTheadAsync(string threadId)
+        public async Task<Thread> RetrieveTheadAsync(string threadId)
         {
             try
             {
@@ -146,7 +148,7 @@ namespace AtencionUsuarios.Services.OpenAi
 
                     var response = await httpClient.GetAsync(apiEndpoint);
 
-                    return await ProccessResponse<Shared.Models.OpenAi.Assistant.Response.Thread>(response);
+                    return await ProccessResponse<Thread>(response);
                 }
             }
             catch (Exception)
@@ -199,7 +201,7 @@ namespace AtencionUsuarios.Services.OpenAi
             }
         }
 
-        public async Task<Run> SubmitToolOutputsAsync(Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
+        public async Task<Run> SubmitToolOutputsAsync(OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
         {
             try
             {
@@ -262,7 +264,7 @@ namespace AtencionUsuarios.Services.OpenAi
             }
         }
 
-        public async Task<ListMessage> ListMessageAsync(string threadId, int? limit = null, string order = null, string after = null, string before = null)
+        public async Task<ListMessage> ListMessageAsync(string threadId, int? limit = null, string? order = null, string? after = null, string? before = null)
         {
             try
             {
@@ -414,7 +416,7 @@ namespace AtencionUsuarios.Services.OpenAi
         }
 
         //FILES
-        public async Task<Shared.Models.OpenAi.Files.Response.File> UploadFile(UploadFile request)
+        public async Task<File> UploadFile(UploadFile request)
         {
             try
             {
@@ -434,7 +436,7 @@ namespace AtencionUsuarios.Services.OpenAi
 
                         var response = await httpClient.PostAsync(apiEndpoint, form);
 
-                        return await ProccessResponse<Shared.Models.OpenAi.Files.Response.File>(response);
+                        return await ProccessResponse<File>(response);
                     }
                 }
             }
@@ -463,5 +465,9 @@ namespace AtencionUsuarios.Services.OpenAi
             }
         }
 
+        Task<Shared.Models.OpenAi.Files.Response.File> IOpenAiService.UploadFile(UploadFile request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

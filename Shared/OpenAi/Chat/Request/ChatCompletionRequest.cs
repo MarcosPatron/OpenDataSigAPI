@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AtencionUsuarios.Shared.Models.OpenAi.Chat.Request
+namespace OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request
 {
     public class ChatCompletionRequest
     {

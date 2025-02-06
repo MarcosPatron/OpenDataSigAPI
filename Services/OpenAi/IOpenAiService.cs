@@ -1,12 +1,12 @@
-﻿using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Request;
-using AtencionUsuarios.Shared.Models.OpenAi.Assistant.Response;
-using AtencionUsuarios.Shared.Models.OpenAi.Chat.Request;
-using AtencionUsuarios.Shared.Models.OpenAi.Chat.Response;
-using AtencionUsuarios.Shared.Models.OpenAi.Files.Request;
+﻿using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
+using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Response;
+using OpenDataSigAPI.Shared.Models.OpenAi.Files.Request;
 using Shared.Models.OpenAi.Assistant.Request;
 using Shared.Models.OpenAi.Assistant.Response;
 
-namespace AtencionUsuarios.Services.OpenAi
+namespace OpenDataSigAPI.Services.OpenAi
 {
     public interface IOpenAiService
     {
