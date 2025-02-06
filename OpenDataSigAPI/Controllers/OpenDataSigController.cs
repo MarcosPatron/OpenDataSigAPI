@@ -1,6 +1,10 @@
 ﻿using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
+using Services.OpenDataSig;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Shared.Result;
+using Shared.OpenDataSig;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -10,12 +14,36 @@ namespace OpenDataSigAPI.Controllers
     public class OpenDataSigController : Controller
     {
         private readonly IOpenAiService _openAiService;
+        private readonly IOpenDataSigService _openDataSigService;
         private readonly IConfiguration _configuration;
 
-        public OpenDataSigController( IOpenAiService openAiService, IConfiguration configuration)
+        public OpenDataSigController( IOpenAiService openAiService, IConfiguration configuration, IOpenDataSigService openDataSigService)
         {
             _openAiService = openAiService;
+            _openDataSigService=openDataSigService;
             _configuration = configuration;
+        }
+
+        [HttpPost("sendMessage")]
+        public async Task<IActionResult> SendMessage([FromBody] string body)
+        {
+            try
+            {
+                if (body == null)
+                {
+                    return BadRequest("No se han enviado datos");
+                }
+
+                var respuestaMensajeOpenDataSig = await _openDataSigService.ManageMessageUi(body);
+
+                var result = Result<RespuestaMensajeOpenDataSig>.Success(respuestaMensajeOpenDataSig);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("createThreadAndRun")]
@@ -104,8 +132,21 @@ namespace OpenDataSigAPI.Controllers
                 return BadRequest("No se han enviado datos");
             }
 
-            var message = await _openAiService.CreateMessageAsync(request, threadId);
-            return Ok(message);
+            if (string.IsNullOrEmpty(OpenAI_ApiKey))
+            {
+                return BadRequest("No se han enviado el api key");
+            }
+
+            try
+            {
+                var message = await _openAiService.CreateMessageAsync(request, threadId);
+
+                return Ok(message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al crear el mensaje: {ex.Message}");
+            }
         }
 
         [HttpGet("retrieveMessage/{threadId}/{messageId}")]

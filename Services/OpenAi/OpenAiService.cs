@@ -201,7 +201,7 @@ namespace OpenDataSigAPI.Services.OpenAi
             }
         }
 
-        public async Task<Run> SubmitToolOutputsAsync(OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
+        public async Task<Run> SubmitToolOutputsAsync(Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
         {
             try
             {
