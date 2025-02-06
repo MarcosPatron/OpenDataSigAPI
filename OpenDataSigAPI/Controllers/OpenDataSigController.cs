@@ -125,21 +125,16 @@ namespace OpenDataSigAPI.Controllers
         }
 
         [HttpPost("createMessage/{threadId}")]
-        public async Task<IActionResult> CreateMessage(string OpenAI_ApiKey, [FromBody] CreateMessage request, string threadId)
+        public async Task<IActionResult> CreateMessage([FromBody] CreateMessage request, string? threadId)
         {
             if (request == null)
             {
                 return BadRequest("No se han enviado datos");
             }
 
-            if (string.IsNullOrEmpty(OpenAI_ApiKey))
-            {
-                return BadRequest("No se han enviado el api key");
-            }
-
             try
             {
-                var message = await _openAiService.CreateMessageAsync(request, threadId);
+                var message = await _openDataSigService.ManageMessageUi("Hola,", threadId);
 
                 return Ok(message);
             }

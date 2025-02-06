@@ -9,6 +9,6 @@ namespace Services.OpenDataSig
 {
     public interface IOpenDataSigService
     {
-        public Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message);
+        public Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId);
     }
 }
