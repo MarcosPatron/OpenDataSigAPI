@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.OpenDataSig
+namespace OpenDataSigAPI.Services.OpenDataSig
 {
     public interface IOpenDataSigService
     {
-        public Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId);
+        Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId);
     }
 }

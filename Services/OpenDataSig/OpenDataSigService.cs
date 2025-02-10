@@ -4,10 +4,11 @@ using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Shared.OpenDataSig;
 using Shared.Result;
+using System.Reflection;
 
-namespace Services.OpenDataSig
+namespace OpenDataSigAPI.Services.OpenDataSig
 {
-    public class OpenDataSigService
+    public class OpenDataSigService : IOpenDataSigService
     {
         private readonly IConfiguration _configuration;
         private readonly IOpenAiService _openAiService;
@@ -18,21 +19,38 @@ namespace Services.OpenDataSig
             _openAiService = openAiService;
         }
 
-        public async Task<Result<RespuestaMensajeOpenDataSig>> ManageMessageUi(string message, string? threadId)
+        public async Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId)
         {
+            //COMPROBACIONES
             //Mensaje no es vacío
             if (string.IsNullOrWhiteSpace(message))
             {
-                return Result<RespuestaMensajeOpenDataSig>.Failure("El mensaje llega vacío. Consulte con su administrador.");
+                return new RespuestaMensajeOpenDataSig { Mensaje = "El mensaje llega vacío. Consulte con su administrador." };
             }
 
-            var runResponse = await _openAiService.CreateRunAsync(new CreateRun {
+            //PROCESAMIENTO
+            
+            var msgResponse = await _openAiService.CreateMessageAsync(new CreateMessage()
+            { 
+                Role = "user",
+                Content = message 
+            },
+            threadId);
+
+            var runResponse = await _openAiService.CreateRunAsync(new CreateRun
+            {
+                AssistantId = _configuration["IdAssistantFarmacias"],
                 Model = "gpt-4o-mini",
-                Temperature = 0.7, 
+                Temperature = 0.7,
                 TopP = 1,
                 MaxCompletionTokens = 1000,
-                MaxPromptTokens = 1000,
-                Message = message }, "threadId");
+                MaxPromptTokens = 1000
+            },
+            threadId);
+
+            // Para saber si se ha creado el RUN
+            Console.WriteLine("Run creado correctamente, ID: " + runResponse.Id);
+
 
             int reintentos = 30;
             int delay = 1000;
@@ -48,9 +66,7 @@ namespace Services.OpenDataSig
                 runResponse = await _openAiService.RetrieveRunAsync(runResponse.ThreadId, runResponse.Id);
             }
 
-            // Return a successful result
-            var respuesta = new RespuestaMensajeOpenDataSig { Mensaje = "Mensaje procesado correctamente." };
-            return Result<RespuestaMensajeOpenDataSig>.Success(respuesta);
+            return new RespuestaMensajeOpenDataSig { Mensaje = "Mensaje procesado correctamente." };
         }
     }
 }

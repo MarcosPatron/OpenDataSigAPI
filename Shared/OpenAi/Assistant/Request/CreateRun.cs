@@ -49,6 +49,5 @@ namespace OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request
 
         [JsonPropertyName("response_format")]
         public object ResponseFormat { get; set; }  //Se indica como object pero puede ser string u object
-        public string Message { get; set; }
     }
 }

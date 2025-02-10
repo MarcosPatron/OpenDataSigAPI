@@ -1,7 +1,7 @@
 ﻿using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using Microsoft.AspNetCore.Mvc;
-using Services.OpenDataSig;
+using OpenDataSigAPI.Services.OpenDataSig;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Shared.Result;
 using Shared.OpenDataSig;
@@ -23,7 +23,7 @@ namespace OpenDataSigAPI.Controllers
             _openDataSigService=openDataSigService;
             _configuration = configuration;
         }
-
+        /*
         [HttpPost("sendMessage")]
         public async Task<IActionResult> SendMessage([FromBody] string body)
         {
@@ -123,9 +123,11 @@ namespace OpenDataSigAPI.Controllers
                 return NotFound(new { error = "Run no encontrado" });
             }
         }
+        */
 
-        [HttpPost("createMessage/{threadId}")]
-        public async Task<IActionResult> CreateMessage([FromBody] CreateMessage request, string? threadId)
+
+        [HttpPost("sendMessage")]
+        public async Task<IActionResult> CreateMessage([FromBody] string request, string? threadId)
         {
             if (request == null)
             {
@@ -134,7 +136,7 @@ namespace OpenDataSigAPI.Controllers
 
             try
             {
-                var message = await _openDataSigService.ManageMessageUi("Hola,", threadId);
+                var message = await _openDataSigService.ManageMessageUi(request, threadId);
 
                 return Ok(message);
             }
@@ -143,7 +145,7 @@ namespace OpenDataSigAPI.Controllers
                 return StatusCode(500, $"Error al crear el mensaje: {ex.Message}");
             }
         }
-
+        /*
         [HttpGet("retrieveMessage/{threadId}/{messageId}")]
         public async Task<IActionResult> RetrieveMessage(string OpenAI_ApiKey, string threadId, string messageId)
         {
@@ -190,8 +192,11 @@ namespace OpenDataSigAPI.Controllers
             var result = await _openAiService.SubmitToolOutputsAsync(request, threadId, runId);
 
             return Ok(result);
-                        }
-                    }
-                }
+        }
+        */
+    }
+        
+}
+        
             
 
