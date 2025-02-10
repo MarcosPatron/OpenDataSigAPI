@@ -1,16 +1,16 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request;
+using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Response;
+using OpenDataSigAPI.Shared.Models.OpenAi.Files.Request;
 using Shared.Models.OpenAi.Assistant.Request;
 using Shared.Models.OpenAi.Assistant.Response;
-using Thread = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.Thread;
-using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Response;
-using OpenDataSigAPI.Shared.Models.OpenAi.Chat.Request;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using File = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.File;
-using OpenDataSigAPI.Shared.Models.OpenAi.Files.Request;
+using Thread = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.Thread;
 
 namespace OpenDataSigAPI.Services.OpenAi
 {
@@ -86,7 +86,7 @@ namespace OpenDataSigAPI.Services.OpenAi
             httpClient.BaseAddress = new Uri("https://api.openai.com/v2/");
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            if(isAssistantApi) httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
+            if (isAssistantApi) httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_configuration["API-KEY_OpenAI"]}");
 
             return httpClient;
@@ -98,7 +98,7 @@ namespace OpenDataSigAPI.Services.OpenAi
         {
             try
             {
-                using (var httpClient = GetOpenAiHttpClient(isAssistantApi:true))
+                using (var httpClient = GetOpenAiHttpClient(isAssistantApi: true))
                 {
                     var apiEndpoint = $"{_configuration["EndPointsOpenAi:Threads"]}/{_configuration["EndPointsOpenAi:Runs"]}";
 

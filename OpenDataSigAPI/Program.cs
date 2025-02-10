@@ -1,4 +1,5 @@
 using OpenDataSigAPI.Services.OpenAi;
+using OpenDataSigAPI.Services.OpenDataSig;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddSwaggerGen();
 
 //Servicios
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
+builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
 
 var app = builder.Build();
 

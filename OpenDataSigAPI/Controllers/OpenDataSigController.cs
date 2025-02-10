@@ -1,10 +1,6 @@
-﻿using OpenDataSigAPI.Services.OpenAi;
-using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
-using Microsoft.AspNetCore.Mvc;
-using Services.OpenDataSig;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Shared.Result;
-using Shared.OpenDataSig;
+﻿using Microsoft.AspNetCore.Mvc;
+using OpenDataSigAPI.Services.OpenAi;
+using OpenDataSigAPI.Services.OpenDataSig;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -17,13 +13,14 @@ namespace OpenDataSigAPI.Controllers
         private readonly IOpenDataSigService _openDataSigService;
         private readonly IConfiguration _configuration;
 
-        public OpenDataSigController( IOpenAiService openAiService, IConfiguration configuration, IOpenDataSigService openDataSigService)
+        public OpenDataSigController(IOpenAiService openAiService, IConfiguration configuration, IOpenDataSigService openDataSigService)
         {
             _openAiService = openAiService;
-            _openDataSigService=openDataSigService;
+            _openDataSigService = openDataSigService;
             _configuration = configuration;
         }
 
+        /*
         [HttpPost("sendMessage")]
         public async Task<IActionResult> SendMessage([FromBody] string body)
         {
@@ -123,23 +120,19 @@ namespace OpenDataSigAPI.Controllers
                 return NotFound(new { error = "Run no encontrado" });
             }
         }
+        */
 
-        [HttpPost("createMessage/{threadId}")]
-        public async Task<IActionResult> CreateMessage(string OpenAI_ApiKey, [FromBody] CreateMessage request, string threadId)
+        [HttpPost("sendMessage")]
+        public async Task<IActionResult> CreateMessage([FromBody] string request, string? threadId)
         {
             if (request == null)
             {
                 return BadRequest("No se han enviado datos");
             }
 
-            if (string.IsNullOrEmpty(OpenAI_ApiKey))
-            {
-                return BadRequest("No se han enviado el api key");
-            }
-
             try
             {
-                var message = await _openAiService.CreateMessageAsync(request, threadId);
+                var message = await _openDataSigService.ManageMessageUi(request, threadId);
 
                 return Ok(message);
             }
@@ -149,6 +142,7 @@ namespace OpenDataSigAPI.Controllers
             }
         }
 
+        /*
         [HttpGet("retrieveMessage/{threadId}/{messageId}")]
         public async Task<IActionResult> RetrieveMessage(string OpenAI_ApiKey, string threadId, string messageId)
         {
@@ -195,8 +189,11 @@ namespace OpenDataSigAPI.Controllers
             var result = await _openAiService.SubmitToolOutputsAsync(request, threadId, runId);
 
             return Ok(result);
-                        }
-                    }
-                }
-            
+        }
+        */
+    }
+
+}
+
+
 
