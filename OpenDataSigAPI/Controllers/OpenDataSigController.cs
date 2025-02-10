@@ -1,10 +1,6 @@
-﻿using OpenDataSigAPI.Services.OpenAi;
-using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Services.OpenDataSig;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Shared.Result;
-using Shared.OpenDataSig;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -17,12 +13,13 @@ namespace OpenDataSigAPI.Controllers
         private readonly IOpenDataSigService _openDataSigService;
         private readonly IConfiguration _configuration;
 
-        public OpenDataSigController( IOpenAiService openAiService, IConfiguration configuration, IOpenDataSigService openDataSigService)
+        public OpenDataSigController(IOpenAiService openAiService, IConfiguration configuration, IOpenDataSigService openDataSigService)
         {
             _openAiService = openAiService;
-            _openDataSigService=openDataSigService;
+            _openDataSigService = openDataSigService;
             _configuration = configuration;
         }
+
         /*
         [HttpPost("sendMessage")]
         public async Task<IActionResult> SendMessage([FromBody] string body)
@@ -125,7 +122,6 @@ namespace OpenDataSigAPI.Controllers
         }
         */
 
-
         [HttpPost("sendMessage")]
         public async Task<IActionResult> CreateMessage([FromBody] string request, string? threadId)
         {
@@ -145,6 +141,7 @@ namespace OpenDataSigAPI.Controllers
                 return StatusCode(500, $"Error al crear el mensaje: {ex.Message}");
             }
         }
+
         /*
         [HttpGet("retrieveMessage/{threadId}/{messageId}")]
         public async Task<IActionResult> RetrieveMessage(string OpenAI_ApiKey, string threadId, string messageId)
@@ -195,8 +192,8 @@ namespace OpenDataSigAPI.Controllers
         }
         */
     }
-        
+
 }
-        
-            
+
+
 

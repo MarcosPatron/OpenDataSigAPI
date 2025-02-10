@@ -3,8 +3,6 @@ using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Shared.OpenDataSig;
-using Shared.Result;
-using System.Reflection;
 
 namespace OpenDataSigAPI.Services.OpenDataSig
 {
@@ -29,29 +27,28 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             }
 
             //PROCESAMIENTO
-            
-            var msgResponse = await _openAiService.CreateMessageAsync(new CreateMessage()
-            { 
-                Role = "user",
-                Content = message 
-            },
-            threadId);
+            var toolOutput = string.Empty;
+            Run runResponse;
 
-            var runResponse = await _openAiService.CreateRunAsync(new CreateRun
+            if (string.IsNullOrWhiteSpace(threadId))
             {
-                AssistantId = _configuration["IdAssistantFarmacias"],
-                Model = "gpt-4o-mini",
-                Temperature = 0.7,
-                TopP = 1,
-                MaxCompletionTokens = 1000,
-                MaxPromptTokens = 1000
-            },
-            threadId);
+                runResponse = await CreateThreadAndRun(message, "gpt-4o-mini", _configuration["IdAssistantFarmacias"]);
+                threadId = runResponse.ThreadId;
+            }
 
-            // Para saber si se ha creado el RUN
-            Console.WriteLine("Run creado correctamente, ID: " + runResponse.Id);
+            else
+                runResponse = await CreateMessageAndRun(message, "gpt-4o-mini", _configuration["IdAssistantFarmacias"], threadId);
 
+            // Espero a que se procese la consulta
+            await checkResponseStatus(runResponse);
 
+            var mensajes = await _openAiService.ListMessageAsync(threadId, null, null, null, null);
+
+            return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value };
+        }
+
+        private async Task checkResponseStatus(Run runResponse)
+        {
             int reintentos = 30;
             int delay = 1000;
 
@@ -61,12 +58,33 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                 reintentos--;
 
                 if (reintentos % 10 == 0) // Aumenta el delay cada 10 intentos
-                    delay = Math.Min(delay * 2, 5000); // Máximo 5 segundos
+                    delay = Math.Min(delay * 2, 5000); // Maximo 5 segundos
 
                 runResponse = await _openAiService.RetrieveRunAsync(runResponse.ThreadId, runResponse.Id);
             }
-
-            return new RespuestaMensajeOpenDataSig { Mensaje = "Mensaje procesado correctamente." };
         }
+
+        private async Task<Run> CreateThreadAndRun(string message, string model, string assistantId)
+        {
+            var createMessageAndRun = new CreateThreadAndRun();
+            createMessageAndRun.AssistantId = assistantId;
+            createMessageAndRun.Model = model;
+            createMessageAndRun.Thread = new CreateThread()
+            {
+                Messages = new List<CreateMessage>() { new CreateMessage() { Role = "user", Content = message } }
+            };
+
+            return await _openAiService.CreateThreadAndRunAsync(createMessageAndRun);
+        }
+
+        private async Task<Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId)
+        {
+            var createMessageRequest = new CreateMessage() { Role = "user", Content = message };
+            await _openAiService.CreateMessageAsync(createMessageRequest, threadId);
+
+            var createRun = new CreateRun() { AssistantId = assistantId, Model = model };
+            return await _openAiService.CreateRunAsync(createRun, threadId);
+        }
+
     }
 }
