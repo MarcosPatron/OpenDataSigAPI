@@ -12,7 +12,7 @@ using System.Text.Json;
 using File = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.File;
 using Thread = OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response.Thread;
 
-namespace OpenDataSigAPI.Services.OpenAi
+namespace Services.OpenAi
 {
     public class OpenAiService : IOpenAiService
     {
@@ -201,7 +201,7 @@ namespace OpenDataSigAPI.Services.OpenAi
             }
         }
 
-        public async Task<Run> SubmitToolOutputsAsync(Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
+        public async Task<Run> SubmitToolOutputsAsync(OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs request, string threadId, string runId)
         {
             try
             {
@@ -465,9 +465,9 @@ namespace OpenDataSigAPI.Services.OpenAi
             }
         }
 
-        Task<Shared.Models.OpenAi.Files.Response.File> IOpenAiService.UploadFile(UploadFile request)
+        Task<File> IOpenAiService.UploadFile(UploadFile request)
         {
-            throw new NotImplementedException();
+            return UploadFile(request);
         }
     }
 }

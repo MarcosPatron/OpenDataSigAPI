@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Services.OpenDataSig;
+using Services.OpenAi;
 
 
 namespace OpenDataSigAPI.Controllers

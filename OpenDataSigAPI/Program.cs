@@ -1,18 +1,19 @@
-using OpenDataSigAPI.Services.OpenAi;
-using OpenDataSigAPI.Services.OpenDataSig;
+﻿using OpenDataSigAPI.Services.OpenDataSig;
+using Services.OpenAi;
+using Services.Functions.Farmacias;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Servicios
+// ✅ REGISTRAR SERVICIOS CORRECTAMENTE
+
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
+builder.Services.AddHttpClient<IFarmaciasService, FarmaciasService>();
 
 var app = builder.Build();
 
@@ -24,9 +25,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
