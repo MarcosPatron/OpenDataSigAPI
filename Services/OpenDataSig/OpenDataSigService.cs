@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
-using OpenDataSigAPI.Services.OpenAi;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
+using Services.Functions.Farmacias;
+using Services.OpenAi;
 using Shared.OpenDataSig;
 
 namespace OpenDataSigAPI.Services.OpenDataSig
@@ -10,11 +11,14 @@ namespace OpenDataSigAPI.Services.OpenDataSig
     {
         private readonly IConfiguration _configuration;
         private readonly IOpenAiService _openAiService;
+        private readonly IFarmaciasService _farmaciasService;
+        private string farmaciasResponse;
 
-        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService)
+        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService)
         {
             _configuration = configuration;
             _openAiService = openAiService;
+            _farmaciasService = farmaciasService;
         }
 
         public async Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId)
@@ -44,7 +48,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
             var mensajes = await _openAiService.ListMessageAsync(threadId, null, null, null, null);
 
-            return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value };
+            return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value, ThreadId = runResponse.ThreadId };
         }
 
         private async Task checkResponseStatus(Run runResponse)
@@ -54,6 +58,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
             while (!runResponse.Status.Equals("completed") && reintentos > 0)
             {
+                Console.WriteLine(runResponse.Status);
                 await Task.Delay(delay);
                 reintentos--;
 
@@ -61,6 +66,26 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                     delay = Math.Min(delay * 2, 5000); // Maximo 5 segundos
 
                 runResponse = await _openAiService.RetrieveRunAsync(runResponse.ThreadId, runResponse.Id);
+
+
+                if (runResponse.Status.Equals("requires_action"))
+                {
+
+                    var toolCall = runResponse.RequiredAction.SubmitToolOutputs.ToolCalls.FirstOrDefault();
+
+                    var farmaciasResponse = await _farmaciasService.GetFarmaciasAsync();
+
+                    string toolResponse = _farmaciasService.ParseData(farmaciasResponse);
+
+                    var submitToolsOutputRequest = new Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs()
+                    {
+                        ToolOutputs = new List<ToolOutputs>() { new ToolOutputs() { ToolCallId = toolCall.Id, Output = toolResponse } }
+                    };
+
+                    Console.WriteLine(toolResponse);
+
+                    runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
+                }
             }
         }
 
