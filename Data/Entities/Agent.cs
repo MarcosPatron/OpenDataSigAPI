@@ -1,4 +1,4 @@
-﻿namespace AtencionUsuarios.Data.Entities
+﻿namespace OpenDataSigAPI.Data.Entities
 {
     public partial class Agent
     {

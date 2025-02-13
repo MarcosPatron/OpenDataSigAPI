@@ -1,16 +1,16 @@
-﻿using AtencionUsuarios.Data.Entities;
+﻿using OpenDataSigAPI.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using File = AtencionUsuarios.Data.Entities.File;
+using File = OpenDataSigAPI.Data.Entities.File;
 
-namespace AtencionUsuarios.Data.Context
+namespace OpenDataSigAPI.Data.Context
 {
-    public partial class AtencionUsuariosContext : DbContext
+    public partial class OpenDataSigAPIContext : DbContext
     {
-        public AtencionUsuariosContext()
+        public OpenDataSigAPIContext()
         {
         }
 
-        public AtencionUsuariosContext(DbContextOptions<AtencionUsuariosContext> options)
+        public OpenDataSigAPIContext(DbContextOptions<OpenDataSigAPIContext> options)
             : base(options)
         {
         }

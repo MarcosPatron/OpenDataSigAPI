@@ -1,15 +1,15 @@
-﻿using AtencionUsuarios.Data.Context;
+﻿using OpenDataSigAPI.Data.Context;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly AtencionUsuariosContext _context;
+        private readonly OpenDataSigAPIContext _context;
 
-        public UnitOfWork(AtencionUsuariosContext context, IAgentsRepository agentsRepository,
+        public UnitOfWork(OpenDataSigAPIContext context, IAgentsRepository agentsRepository,
                           IUsersRepository usersRepository, IThreadsRepository threadsRepository,
                           IRunsRepository runsRepository, IMessagesRepository messagesRepository,
-                          ILogsRepository logsRepository,IAttachmentsRepository attachmentsRepository,
+                          ILogsRepository logsRepository, IAttachmentsRepository attachmentsRepository,
                           IFilesRepository filesRepository)
         {
             _context = context;

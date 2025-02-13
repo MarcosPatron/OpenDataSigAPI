@@ -1,16 +1,16 @@
-﻿using AtencionUsuarios.Data.Context;
-using AtencionUsuarios.Data.Entities;
-using AtencionUsuarios.Shared;
+﻿using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Data.Entities;
+using OpenDataSigAPI.Shared;
 using Microsoft.EntityFrameworkCore;
-using static AtencionUsuarios.Shared.Constantes;
+using Shared;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class LogsRepository : ILogsRepository
     {
-        private readonly IDbContextFactory<AtencionUsuariosContext> _contextFactory;
+        private readonly IDbContextFactory<OpenDataSigAPIContext> _contextFactory;
 
-        public LogsRepository(IDbContextFactory<AtencionUsuariosContext> contextFactory)
+        public LogsRepository(IDbContextFactory<OpenDataSigAPIContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -27,15 +27,14 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Create(Log entity, string user)
+        public async Task Create(Log entity)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
-                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -50,7 +49,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 Log entidad = await _context.Logs.FindAsync(id);
                 _context.Logs.Remove(entidad);
@@ -67,7 +66,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 Log entidad = await _context.Logs.FindAsync(id);
 
@@ -80,7 +79,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = motivoBaja;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.SOFT_DELETE;
+                entidad.AccionUltimaModif = Constants.Operaciones.SOFT_DELETE;
 
                 await _context.SaveChangesAsync();
             }
@@ -94,7 +93,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Logs.IgnoreQueryFilters().ToListAsync();
             }
             catch (Exception)
@@ -107,7 +106,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Logs.ToListAsync();
             }
             catch (Exception)
@@ -120,7 +119,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var allLogs = await _context.Logs.IgnoreQueryFilters().ToListAsync();
                 var activeLogs = await _context.Logs.ToListAsync();
@@ -137,7 +136,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Logs.IgnoreQueryFilters().SingleOrDefaultAsync(a => a.Logsid == id);
             }
             catch (Exception)
@@ -150,7 +149,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidad = await _context.Logs.IgnoreQueryFilters().SingleOrDefaultAsync(a => a.Logsid == id);
 
                 if (entidad == null)
@@ -162,7 +161,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = null;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.REACTIVATE;
+                entidad.AccionUltimaModif = Constants.Operaciones.REACTIVATE;
 
                 await _context.SaveChangesAsync();
                 return entidad;
@@ -177,7 +176,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidadAActualizar = await _context.Logs.FindAsync(id);
 
                 entidadAActualizar.Mensaje = entity.Mensaje;
@@ -188,7 +187,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 entidadAActualizar.UsuarioUltimaModif = user;
                 entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 _context.Logs.Update(entidadAActualizar);
                 await _context.SaveChangesAsync();
@@ -209,9 +208,9 @@ namespace AtencionUsuarios.Data.Repositories
                 nuevoError.Mensaje = message.Length < 1000 ? message : message.Substring(0, 1000);
                 nuevoError.Descripcion = innerException == null ? stackTrace : $"{stackTrace} - Inner:{innerException.Message}";
                 if (nuevoError.Descripcion.Length > 3000) { nuevoError.Descripcion = nuevoError.Descripcion.Substring(0, 3000); }
-                nuevoError.TipoLog = TiposLogs.FATAL;
+                nuevoError.TipoLog = Constants.TiposLogs.FATAL;
 
-                await Create(nuevoError, user);
+                await Create(nuevoError);
             }
             catch (Exception)
             {
@@ -228,9 +227,9 @@ namespace AtencionUsuarios.Data.Repositories
                 nuevoInfo.Metodo = metodo.Length < 100 ? metodo : metodo.Substring(0, 100);
                 nuevoInfo.Mensaje = message.Length < 1000 ? message : message.Substring(0, 1000);
                 nuevoInfo.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
-                nuevoInfo.TipoLog = TiposLogs.INFO;
+                nuevoInfo.TipoLog = Constants.TiposLogs.INFO;
 
-                await Create(nuevoInfo, user);
+                await Create(nuevoInfo);
             }
             catch (Exception)
             {
@@ -245,21 +244,21 @@ namespace AtencionUsuarios.Data.Repositories
             nuevoWarning.Metodo = metodo.Length < 100 ? metodo : metodo.Substring(0, 100);
             nuevoWarning.Mensaje = message.Length < 1000 ? message : message.Substring(0, 1000);
             nuevoWarning.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
-            nuevoWarning.TipoLog = TiposLogs.WARNING;
+            nuevoWarning.TipoLog = Constants.TiposLogs.WARNING;
 
-            await Create(nuevoWarning, user);
+            await Create(nuevoWarning);
         }
 
-        public async Task LogError(string objeto, string metodo, string message, string descripcion, string user)
+        public async Task LogError(string objeto, string metodo, string message, string descripcion)
         {
             var nuevoWarning = new Log();
             nuevoWarning.Objeto = objeto.Length < 10 ? objeto : objeto.Substring(0, 10);
             nuevoWarning.Metodo = metodo.Length < 100 ? metodo : metodo.Substring(0, 100);
             nuevoWarning.Mensaje = message.Length < 1000 ? message : message.Substring(0, 1000);
             nuevoWarning.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
-            nuevoWarning.TipoLog = TiposLogs.ERROR;
+            nuevoWarning.TipoLog = Constants.TiposLogs.ERROR;
 
-            await Create(nuevoWarning, user);
+            await Create(nuevoWarning);
         }
     }
 }

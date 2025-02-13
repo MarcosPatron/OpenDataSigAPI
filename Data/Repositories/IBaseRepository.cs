@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public interface IBaseRepository<T>
     {
@@ -10,7 +10,7 @@ namespace AtencionUsuarios.Data.Repositories
         /// <param name="entity">Entidad que se creará</param>
         /// <param name="user">Usuario que realiza la operación</param>
         /// <returns>No tiene valor de retorno</returns>
-        Task Create(T entity, string user);
+        Task Create(T entity);
         /// <summary>
         /// Devuelve todos los elementos de un tipo dado, tanto activos como inactivos. Devuelve también todos los elementos de navegación relacionados.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿namespace AtencionUsuarios.Data.Repositories
+﻿namespace OpenDataSigAPI.Data.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {

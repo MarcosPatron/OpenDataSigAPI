@@ -1,6 +1,6 @@
-﻿using File = AtencionUsuarios.Data.Entities.File;
+﻿using File = OpenDataSigAPI.Data.Entities.File;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public interface IFilesRepository : IBaseRepository<File>
     {

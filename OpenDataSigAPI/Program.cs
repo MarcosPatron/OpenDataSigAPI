@@ -1,6 +1,7 @@
 ﻿using OpenDataSigAPI.Services.OpenDataSig;
 using Services.OpenAi;
 using Services.Functions.Farmacias;
+using OpenDataSigAPI.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ REGISTRAR SERVICIOS CORRECTAMENTE
-
+// Register services
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
 builder.Services.AddHttpClient<IFarmaciasService, FarmaciasService>();

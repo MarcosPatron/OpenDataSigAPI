@@ -1,10 +1,10 @@
 ﻿
 
-using AtencionUsuarios.Data.Entities;
+using OpenDataSigAPI.Data.Entities;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
-    public interface IThreadsRepository : IBaseRepository<AtencionUsuarios.Data.Entities.Thread>
+    public interface IThreadsRepository : IBaseRepository<OpenDataSigAPI.Data.Entities.Thread>
     {
         Task<IEnumerable<Entities.Thread>> GetAllActiveWithUser();
         Task<IEnumerable<Entities.Thread>> GetAllThreadsBuscadorThreads(string username,string status, string provider);
@@ -13,7 +13,7 @@ namespace AtencionUsuarios.Data.Repositories
         Task<IEnumerable<Entities.Thread>> GetAllActiveByUsernameAndProvider(string username,string provider);
         Task<Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id);
         Task<Entities.Thread> GetThreadWithMessagesAndAttachmentsAndUserById(decimal id);
-        Task<AtencionUsuarios.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id);
+        Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id);
         Task<string> GetIdThreadByThreadId(decimal threadId);
         Task<Entities.Thread> UpdateThreadStatusAndId(decimal threadId, string threadStatus ,string IdThread, string user);
         Task<Entities.Thread> UpdateThreadStatusAndCreateMessage(decimal threadId, string threadStatus, Message newMessage, string user);

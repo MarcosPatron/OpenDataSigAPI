@@ -1,15 +1,15 @@
-﻿using AtencionUsuarios.Data.Context;
-using AtencionUsuarios.Data.Entities;
-using AtencionUsuarios.Shared;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Data.Entities;
+using Shared;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class MessagesRepository : IMessagesRepository
     {
-        private readonly IDbContextFactory<AtencionUsuariosContext> _contextFactory;
+        private readonly IDbContextFactory<OpenDataSigAPIContext> _contextFactory;
 
-        public MessagesRepository(IDbContextFactory<AtencionUsuariosContext> contextFactory)
+        public MessagesRepository(IDbContextFactory<OpenDataSigAPIContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -26,15 +26,14 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Create(Message entity, string user)
+        public async Task Create(Message entity)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
-                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -49,7 +48,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 Message entidad = await _context.Messages.FindAsync(id);
                 _context.Messages.Remove(entidad);
@@ -66,7 +65,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 Message entidad = await _context.Messages.FindAsync(id);
 
@@ -79,7 +78,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = motivoBaja;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.SOFT_DELETE;
+                entidad.AccionUltimaModif = Constants.Operaciones.SOFT_DELETE;
 
                 await _context.SaveChangesAsync();
             }
@@ -93,7 +92,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Messages.IgnoreQueryFilters().ToListAsync();
             }
             catch (Exception)
@@ -106,7 +105,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Messages.ToListAsync();
             }
             catch (Exception)
@@ -119,7 +118,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var allMessages = await _context.Messages.IgnoreQueryFilters().ToListAsync();
                 var activeMessages = await _context.Messages.ToListAsync();
@@ -136,7 +135,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Messages.IgnoreQueryFilters().SingleOrDefaultAsync(m => m.Messagesid == id);
             }
             catch (Exception)
@@ -149,7 +148,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidad = await _context.Messages.IgnoreQueryFilters().SingleOrDefaultAsync(m => m.Messagesid == id);
 
                 if (entidad == null)
@@ -161,7 +160,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = null;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.REACTIVATE;
+                entidad.AccionUltimaModif = Constants.Operaciones.REACTIVATE;
 
                 await _context.SaveChangesAsync();
                 return entidad;
@@ -176,7 +175,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidadAActualizar = await _context.Messages.FindAsync(id);
 
                 entidadAActualizar.ThreadId = entity.ThreadId;
@@ -186,7 +185,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 entidadAActualizar.UsuarioUltimaModif = user;
                 entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 _context.Messages.Update(entidadAActualizar);
                 await _context.SaveChangesAsync();
