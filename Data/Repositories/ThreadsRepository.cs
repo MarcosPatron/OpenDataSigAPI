@@ -1,17 +1,16 @@
-﻿using AtencionUsuarios.Data.Context;
-using AtencionUsuarios.Data.Entities;
-using AtencionUsuarios.Shared;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Data.Entities;
 using Oracle.ManagedDataAccess.Client;
-using System.Diagnostics;
+using Shared;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class ThreadsRepository : IThreadsRepository
     {
-        private readonly IDbContextFactory<AtencionUsuariosContext> _contextFactory;
+        private readonly IDbContextFactory<OpenDataSigAPIContext> _contextFactory;
 
-        public ThreadsRepository(IDbContextFactory<AtencionUsuariosContext> contextFactory)
+        public ThreadsRepository(IDbContextFactory<OpenDataSigAPIContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -28,15 +27,14 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Create(AtencionUsuarios.Data.Entities.Thread entity, string user)
+        public async Task Create(OpenDataSigAPI.Data.Entities.Thread entity)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
-                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -67,9 +65,9 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
-                AtencionUsuarios.Data.Entities.Thread entidad = await _context.Threads.FindAsync(id);
+                OpenDataSigAPI.Data.Entities.Thread entidad = await _context.Threads.FindAsync(id);
                 _context.Threads.Remove(entidad);
 
                 await _context.SaveChangesAsync();
@@ -84,9 +82,9 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
-                AtencionUsuarios.Data.Entities.Thread entidad = await _context.Threads.FindAsync(id);
+                OpenDataSigAPI.Data.Entities.Thread entidad = await _context.Threads.FindAsync(id);
 
                 if (entidad == null)
                 {
@@ -97,7 +95,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = motivoBaja;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.SOFT_DELETE;
+                entidad.AccionUltimaModif = Constants.Operaciones.SOFT_DELETE;
 
                 await _context.SaveChangesAsync();
             }
@@ -107,11 +105,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<AtencionUsuarios.Data.Entities.Thread>> GetAll()
+        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAll()
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Threads.IgnoreQueryFilters().ToListAsync();
             }
             catch (Exception)
@@ -120,11 +118,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<AtencionUsuarios.Data.Entities.Thread>> GetAllActive()
+        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllActive()
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Threads.ToListAsync();
             }
             catch (Exception)
@@ -133,11 +131,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<AtencionUsuarios.Data.Entities.Thread>> GetAllInactive()
+        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllInactive()
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var allThreads = await _context.Threads.IgnoreQueryFilters().ToListAsync();
                 var activeThreads = await _context.Threads.ToListAsync();
@@ -150,11 +148,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<AtencionUsuarios.Data.Entities.Thread> GetById(decimal id)
+        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetById(decimal id)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Threads.IgnoreQueryFilters().SingleOrDefaultAsync(t => t.Threadsid == id);
             }
             catch (Exception)
@@ -163,11 +161,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<AtencionUsuarios.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id)
+        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var thread = await _context.Threads.Include(t => t.Attachments.OrderBy(a => a.FechaAlta)).SingleOrDefaultAsync(t => t.Threadsid == id);
 
@@ -184,12 +182,12 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<AtencionUsuarios.Data.Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
+        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
-                return await _context.Threads.Include(t=>t.Messages.OrderBy(m=>m.FechaAlta)).Include(t=>t.Attachments.OrderBy(a=>a.FechaAlta)).SingleOrDefaultAsync(t => t.Threadsid == id);
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
+                return await _context.Threads.Include(t => t.Messages.OrderBy(m => m.FechaAlta)).Include(t => t.Attachments.OrderBy(a => a.FechaAlta)).SingleOrDefaultAsync(t => t.Threadsid == id);
             }
             catch (Exception)
             {
@@ -201,10 +199,10 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Threads.Include(t => t.Messages.OrderBy(m => m.FechaAlta))
                                              .Include(t => t.Attachments.OrderBy(a => a.FechaAlta))
-                                             .Include(t=>t.User)
+                                             .Include(t => t.User)
                                              .SingleOrDefaultAsync(t => t.Threadsid == id);
             }
             catch (Exception)
@@ -213,11 +211,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<AtencionUsuarios.Data.Entities.Thread> Reactivate(decimal id, string user)
+        public async Task<OpenDataSigAPI.Data.Entities.Thread> Reactivate(decimal id, string user)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidad = await _context.Threads.IgnoreQueryFilters().SingleOrDefaultAsync(t => t.Threadsid == id);
 
                 if (entidad == null)
@@ -229,7 +227,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = null;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.REACTIVATE;
+                entidad.AccionUltimaModif = Constants.Operaciones.REACTIVATE;
 
                 await _context.SaveChangesAsync();
                 return entidad;
@@ -240,11 +238,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Update(AtencionUsuarios.Data.Entities.Thread entity, decimal id, string user)
+        public async Task Update(OpenDataSigAPI.Data.Entities.Thread entity, decimal id, string user)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidadAActualizar = await _context.Threads.FindAsync(id);
 
                 entidadAActualizar.UserId = entity.UserId;
@@ -261,7 +259,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 entidadAActualizar.UsuarioUltimaModif = user;
                 entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 _context.Threads.Update(entidadAActualizar);
                 await _context.SaveChangesAsync();
@@ -274,17 +272,17 @@ namespace AtencionUsuarios.Data.Repositories
 
         public async Task<string> GetIdThreadByThreadId(decimal threadId)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var thread = await context.Threads.IgnoreQueryFilters().SingleOrDefaultAsync(t => t.Threadsid == threadId);
                 return thread?.IdThread ?? string.Empty;
             }
-                
+
         }
 
         public async Task<Entities.Thread> UpdateThreadStatusAndId(decimal threadId, string threadStatus, string idThread, string user)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var thread = await context.Threads.FindAsync(threadId);
 
@@ -293,7 +291,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
-                thread.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 context.Threads.Update(thread);
 
@@ -303,9 +301,9 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<Entities.Thread> UpdateThreadStatusAndCreateMessage(decimal threadId, string threadStatus, Entities.Message newMessage,string user)
+        public async Task<Entities.Thread> UpdateThreadStatusAndCreateMessage(decimal threadId, string threadStatus, Entities.Message newMessage, string user)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var thread = await context.Threads.FindAsync(threadId);
 
@@ -313,7 +311,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
-                thread.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 context.Threads.Update(thread);
 
@@ -325,9 +323,9 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus,string threadDescription, string idThread, Message newMessage, Run newRun, string user)
+        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, string threadDescription, string idThread, Message newMessage, Run newRun, string user)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var thread = await context.Threads.FindAsync(threadId);
 
@@ -341,7 +339,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
-                thread.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 context.Threads.Update(thread);
                 context.Runs.Add(newRun);
@@ -355,7 +353,7 @@ namespace AtencionUsuarios.Data.Repositories
 
         public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, List<Message> newMessages, Run newRun, List<Attachment> newFiles, string user)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var thread = await context.Threads.FindAsync(threadId);
 
@@ -383,7 +381,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
-                thread.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 context.Threads.Update(thread);
 
@@ -408,12 +406,12 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<Entities.Thread>> GetAllActiveByUsernameAndProvider(string username,string provider)
+        public async Task<IEnumerable<Entities.Thread>> GetAllActiveByUsernameAndProvider(string username, string provider)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
-                return await _context.Threads.OrderByDescending(t=>t.FechaAlta).Where(t=>t.User.Username.Equals(username) && t.Provider.Equals(provider)).ToListAsync();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
+                return await _context.Threads.OrderByDescending(t => t.FechaAlta).Where(t => t.User.Username.Equals(username) && t.Provider.Equals(provider)).ToListAsync();
             }
             catch (Exception)
             {
@@ -425,7 +423,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Threads.OrderByDescending(t => t.FechaAlta).Where(t => t.User.Username.Equals(username)).ToListAsync();
             }
             catch (Exception)
@@ -438,8 +436,8 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
-                return await _context.Threads.OrderByDescending(t => t.FechaAlta).Include(t=>t.User).ToListAsync();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
+                return await _context.Threads.OrderByDescending(t => t.FechaAlta).Include(t => t.User).ToListAsync();
             }
             catch (Exception)
             {
@@ -447,11 +445,11 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<Entities.Thread>> GetAllThreadsBuscadorThreads(string username,string status, string provider) 
+        public async Task<IEnumerable<Entities.Thread>> GetAllThreadsBuscadorThreads(string username, string status, string provider)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var queryableThreads = _context.Threads.Include(t => t.User).AsQueryable();
 
@@ -460,7 +458,7 @@ namespace AtencionUsuarios.Data.Repositories
                     queryableThreads = queryableThreads.Where(t => t.Status.Equals(status)).AsQueryable();
                 if (!string.IsNullOrEmpty(provider))
                     queryableThreads = queryableThreads.Where(t => t.Provider.Equals(provider)).AsQueryable();
-                if(!string.IsNullOrEmpty(username))
+                if (!string.IsNullOrEmpty(username))
                     queryableThreads = queryableThreads.Where(t => t.User.NombreCompleto.Contains(username)).AsQueryable();
 
                 return await queryableThreads.OrderByDescending(t => t.FechaAlta).ToListAsync();

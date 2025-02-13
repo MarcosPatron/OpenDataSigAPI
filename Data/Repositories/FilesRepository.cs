@@ -1,15 +1,16 @@
-﻿using AtencionUsuarios.Data.Context;
-using AtencionUsuarios.Shared;
+﻿using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Shared;
 using Microsoft.EntityFrameworkCore;
-using File = AtencionUsuarios.Data.Entities.File;
+using File = OpenDataSigAPI.Data.Entities.File;
+using Shared;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class FilesRepository : IFilesRepository
     {
-        private readonly IDbContextFactory<AtencionUsuariosContext> _contextFactory;
+        private readonly IDbContextFactory<OpenDataSigAPIContext> _contextFactory;
 
-        public FilesRepository(IDbContextFactory<AtencionUsuariosContext> contextFactory)
+        public FilesRepository(IDbContextFactory<OpenDataSigAPIContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -26,15 +27,14 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Create(File entity, string user)
+        public async Task Create(File entity)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
-                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -49,7 +49,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 File entidad = await _context.Files.FindAsync(id);
                 _context.Files.Remove(entidad);
@@ -66,7 +66,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 File entidad = await _context.Files.FindAsync(id);
 
@@ -79,7 +79,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = motivoBaja;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.SOFT_DELETE;
+                entidad.AccionUltimaModif = Constants.Operaciones.SOFT_DELETE;
 
                 await _context.SaveChangesAsync();
             }
@@ -93,7 +93,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Files.IgnoreQueryFilters().ToListAsync();
             }
             catch (Exception)
@@ -106,7 +106,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Files.ToListAsync();
             }
             catch (Exception)
@@ -119,7 +119,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var allFiles = await _context.Files.IgnoreQueryFilters().ToListAsync();
                 var activeFiles = await _context.Files.ToListAsync();
@@ -136,7 +136,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Files.IgnoreQueryFilters().SingleOrDefaultAsync(m => m.Filesid == id);
             }
             catch (Exception)
@@ -149,7 +149,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidad = await _context.Files.IgnoreQueryFilters().SingleOrDefaultAsync(m => m.Filesid == id);
 
                 if (entidad == null)
@@ -161,7 +161,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = null;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.REACTIVATE;
+                entidad.AccionUltimaModif = Constants.Operaciones.REACTIVATE;
 
                 await _context.SaveChangesAsync();
                 return entidad;
@@ -176,7 +176,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidadAActualizar = await _context.Files.FindAsync(id);
 
                 entidadAActualizar.AgentId = entity.AgentId;
@@ -187,7 +187,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 entidadAActualizar.UsuarioUltimaModif = user;
                 entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 _context.Files.Update(entidadAActualizar);
                 await _context.SaveChangesAsync();
@@ -202,7 +202,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Files.Where(a=>a.AgentId ==agentId).ToListAsync();
             }
             catch (Exception)

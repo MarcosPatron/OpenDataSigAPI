@@ -1,6 +1,6 @@
-﻿using AtencionUsuarios.Data.Entities;
+﻿using OpenDataSigAPI.Data.Entities;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public interface IMessagesRepository : IBaseRepository<Message>
     {

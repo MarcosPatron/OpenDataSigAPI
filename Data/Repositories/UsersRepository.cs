@@ -1,15 +1,15 @@
-﻿using AtencionUsuarios.Data.Context;
-using AtencionUsuarios.Data.Entities;
-using AtencionUsuarios.Shared;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Data.Entities;
+using Shared;
 
-namespace AtencionUsuarios.Data.Repositories
+namespace OpenDataSigAPI.Data.Repositories
 {
     public class UsersRepository : IUsersRepository
     {
-        private readonly IDbContextFactory<AtencionUsuariosContext> _contextFactory;
+        private readonly IDbContextFactory<OpenDataSigAPIContext> _contextFactory;
 
-        public UsersRepository(IDbContextFactory<AtencionUsuariosContext> contextFactory)
+        public UsersRepository(IDbContextFactory<OpenDataSigAPIContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -26,15 +26,14 @@ namespace AtencionUsuarios.Data.Repositories
             }
         }
 
-        public async Task Create(User entity, string user)
+        public async Task Create(User entity)
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
-                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -49,7 +48,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 User entidad = await _context.Users.FindAsync(id);
                 _context.Users.Remove(entidad);
@@ -66,7 +65,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 User entidad = await _context.Users.FindAsync(id);
 
@@ -79,7 +78,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = motivoBaja;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.SOFT_DELETE;
+                entidad.AccionUltimaModif = Constants.Operaciones.SOFT_DELETE;
 
                 await _context.SaveChangesAsync();
             }
@@ -93,7 +92,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Users.IgnoreQueryFilters().ToListAsync();
             }
             catch (Exception)
@@ -106,7 +105,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Users.ToListAsync();
             }
             catch (Exception)
@@ -119,7 +118,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
 
                 var allUser = await _context.Users.IgnoreQueryFilters().ToListAsync();
                 var activeUser = await _context.Users.ToListAsync();
@@ -136,7 +135,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return await _context.Users.IgnoreQueryFilters().SingleOrDefaultAsync(u => u.Usersid == id);
             }
             catch (Exception)
@@ -149,7 +148,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidad = await _context.Users.IgnoreQueryFilters().SingleOrDefaultAsync(u => u.Usersid == id);
 
                 if (entidad == null)
@@ -161,7 +160,7 @@ namespace AtencionUsuarios.Data.Repositories
                 entidad.MotivoBaja = null;
                 entidad.UsuarioUltimaModif = user;
                 entidad.FechaUltimaModif = DateTime.Now;
-                entidad.AccionUltimaModif = Constantes.Operaciones.REACTIVATE;
+                entidad.AccionUltimaModif = Constants.Operaciones.REACTIVATE;
 
                 await _context.SaveChangesAsync();
                 return entidad;
@@ -176,7 +175,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 var entidadAActualizar = await _context.Users.FindAsync(id);
 
                 entidadAActualizar.Username = entity.Username;
@@ -187,7 +186,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                 entidadAActualizar.UsuarioUltimaModif = user;
                 entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                 _context.Users.Update(entidadAActualizar);
                 await _context.SaveChangesAsync();
@@ -202,7 +201,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                var _context = (AtencionUsuariosContext)CreateDbContext();
+                var _context = (OpenDataSigAPIContext)CreateDbContext();
                 return _context.Users.IgnoreQueryFilters().SingleOrDefault(u => u.Username.Equals(username)) != null;
             }
             catch (Exception)
@@ -213,7 +212,7 @@ namespace AtencionUsuarios.Data.Repositories
 
         public decimal GetUserIdByUsername(string username)
         {
-            using(var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 var user = context.Users.IgnoreQueryFilters().SingleOrDefault(u => u.Username.Equals(username));
                 return user?.Usersid ?? 0;
@@ -222,7 +221,7 @@ namespace AtencionUsuarios.Data.Repositories
 
         public async Task<User> GetUserByUsername(string username)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
                 return await context.Users.IgnoreQueryFilters().SingleOrDefaultAsync(u => u.Username.Equals(username));
             }
@@ -232,7 +231,7 @@ namespace AtencionUsuarios.Data.Repositories
         {
             try
             {
-                using (var _context = (AtencionUsuariosContext)CreateDbContext())
+                using (var _context = (OpenDataSigAPIContext)CreateDbContext())
                 {
                     var entidadAActualizar = await _context.Users.IgnoreQueryFilters().SingleOrDefaultAsync(u => u.Username.Equals(username));
 
@@ -240,7 +239,7 @@ namespace AtencionUsuarios.Data.Repositories
 
                     entidadAActualizar.UsuarioUltimaModif = username;
                     entidadAActualizar.FechaUltimaModif = DateTime.Now;
-                    entidadAActualizar.AccionUltimaModif = Constantes.Operaciones.UPDATE;
+                    entidadAActualizar.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
                     _context.Users.Update(entidadAActualizar);
                     await _context.SaveChangesAsync();
@@ -256,9 +255,9 @@ namespace AtencionUsuarios.Data.Repositories
 
         public async Task<byte[]> GetAvatarByUsername(string username)
         {
-            using (var context = (AtencionUsuariosContext)CreateDbContext())
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
-                return await context.Users.IgnoreQueryFilters().Where(u => u.Username.Equals(username)).Select(u=>u.Avatar).SingleOrDefaultAsync();
+                return await context.Users.IgnoreQueryFilters().Where(u => u.Username.Equals(username)).Select(u => u.Avatar).SingleOrDefaultAsync();
             }
         }
     }

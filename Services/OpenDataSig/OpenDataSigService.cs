@@ -3,13 +3,17 @@ using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Services.Functions.Farmacias;
 using Services.OpenAi;
+using OpenDataSigAPI.Data.Entities;
+using OpenDataSigAPI.Data.Repositories;
 using Shared.OpenDataSig;
+using static Shared.Constants;
 
 namespace OpenDataSigAPI.Services.OpenDataSig
 {
     public class OpenDataSigService : IOpenDataSigService
     {
         private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IOpenAiService _openAiService;
         private readonly IFarmaciasService _farmaciasService;
         private string farmaciasResponse;
@@ -27,12 +31,13 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             //Mensaje no es vacío
             if (string.IsNullOrWhiteSpace(message))
             {
+                await _unitOfWork.Logs.LogError(this.GetType().FullName, System.Reflection.MethodBase.GetCurrentMethod().Name, TiposErrores.MENSAJE_CLIENTE_VACIO, string.Empty);
                 return new RespuestaMensajeOpenDataSig { Mensaje = "El mensaje llega vacío. Consulte con su administrador." };
             }
 
             //PROCESAMIENTO
             var toolOutput = string.Empty;
-            Run runResponse;
+            Shared.Models.OpenAi.Assistant.Response.Run runResponse;
 
             if (string.IsNullOrWhiteSpace(threadId))
             {
@@ -51,7 +56,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value, ThreadId = runResponse.ThreadId };
         }
 
-        private async Task checkResponseStatus(Run runResponse)
+        private async Task checkResponseStatus(Shared.Models.OpenAi.Assistant.Response.Run runResponse)
         {
             int reintentos = 30;
             int delay = 1000;
@@ -89,7 +94,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             }
         }
 
-        private async Task<Run> CreateThreadAndRun(string message, string model, string assistantId)
+        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateThreadAndRun(string message, string model, string assistantId)
         {
             var createMessageAndRun = new CreateThreadAndRun();
             createMessageAndRun.AssistantId = assistantId;
@@ -102,7 +107,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             return await _openAiService.CreateThreadAndRunAsync(createMessageAndRun);
         }
 
-        private async Task<Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId)
+        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId)
         {
             var createMessageRequest = new CreateMessage() { Role = "user", Content = message };
             await _openAiService.CreateMessageAsync(createMessageRequest, threadId);

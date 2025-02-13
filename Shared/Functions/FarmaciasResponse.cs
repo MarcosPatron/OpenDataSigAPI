@@ -16,6 +16,7 @@ namespace Shared.Functions
         [JsonPropertyName("features")]
         public List<Feature> FeatureList { get; set; }
     }
+
     public class Feature
     {
         [JsonPropertyName("type")]
@@ -36,6 +37,7 @@ namespace Shared.Functions
         [JsonPropertyName("bbox")]
         public List<double> Bbox { get; set; }
     }
+
     public class Geometry
     {
         public string Type { get; set; }
