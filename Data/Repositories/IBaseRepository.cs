@@ -8,7 +8,6 @@ namespace OpenDataSigAPI.Data.Repositories
         /// Permite crear una entidad de un tipo dado
         /// </summary>
         /// <param name="entity">Entidad que se creará</param>
-        /// <param name="user">Usuario que realiza la operación</param>
         /// <returns>No tiene valor de retorno</returns>
         Task Create(T entity);
         /// <summary>

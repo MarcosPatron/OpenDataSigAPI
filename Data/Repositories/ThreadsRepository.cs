@@ -105,7 +105,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAll()
+        public async Task<IEnumerable<Entities.Thread>> GetAll()
         {
             try
             {
@@ -118,7 +118,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllActive()
+        public async Task<IEnumerable<Entities.Thread>> GetAllActive()
         {
             try
             {
@@ -131,7 +131,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllInactive()
+        public async Task<IEnumerable<Entities.Thread>> GetAllInactive()
         {
             try
             {
@@ -148,7 +148,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetById(decimal id)
+        public async Task<Entities.Thread> GetById(decimal id)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id)
+        public async Task<Entities.Thread> GetThreadWithAttachmentsById(decimal id)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
+        public async Task<Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> Reactivate(decimal id, string user)
+        public async Task<Entities.Thread> Reactivate(decimal id, string user)
         {
             try
             {
@@ -238,7 +238,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task Update(OpenDataSigAPI.Data.Entities.Thread entity, decimal id, string user)
+        public async Task Update(Entities.Thread entity, decimal id, string user)
         {
             try
             {

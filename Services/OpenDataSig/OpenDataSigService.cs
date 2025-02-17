@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OpenDataSigAPI.Data.Repositories;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
-using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
 using Services.Functions.Farmacias;
 using Services.OpenAi;
-using OpenDataSigAPI.Data.Entities;
-using OpenDataSigAPI.Data.Repositories;
 using Shared.OpenDataSig;
 using static Shared.Constants;
 
@@ -34,6 +32,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                 await _unitOfWork.Logs.LogError(this.GetType().FullName, System.Reflection.MethodBase.GetCurrentMethod().Name, TiposErrores.MENSAJE_CLIENTE_VACIO, string.Empty);
                 return new RespuestaMensajeOpenDataSig { Mensaje = "El mensaje llega vacío. Consulte con su administrador." };
             }
+
 
             //PROCESAMIENTO
             var toolOutput = string.Empty;
@@ -82,7 +81,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
                     string toolResponse = _farmaciasService.ParseData(farmaciasResponse);
 
-                    var submitToolsOutputRequest = new Shared.Models.OpenAi.Assistant.Request.SubmitToolOutputs()
+                    var submitToolsOutputRequest = new SubmitToolOutputs()
                     {
                         ToolOutputs = new List<ToolOutputs>() { new ToolOutputs() { ToolCallId = toolCall.Id, Output = toolResponse } }
                     };
