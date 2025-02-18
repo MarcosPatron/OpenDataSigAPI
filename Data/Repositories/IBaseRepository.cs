@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace OpenDataSigAPI.Data.Repositories
+﻿namespace OpenDataSigAPI.Data.Repositories
 {
     public interface IBaseRepository<T>
     {
@@ -10,7 +8,7 @@ namespace OpenDataSigAPI.Data.Repositories
         /// <param name="entity">Entidad que se creará</param>
         /// <param name="user">Usuario que realiza la operación</param>
         /// <returns>No tiene valor de retorno</returns>
-        Task Create(T entity);
+        Task Create(T entity, string user);
         /// <summary>
         /// Devuelve todos los elementos de un tipo dado, tanto activos como inactivos. Devuelve también todos los elementos de navegación relacionados.
         /// </summary>
@@ -39,7 +37,7 @@ namespace OpenDataSigAPI.Data.Repositories
         /// <param name="id">id de la entidad a actualizar</param>
         /// <param name="user">Usuario que realiza la operación</param>
         /// <returns>No tiene valor de retorno</returns>
-        Task Update(T entity,decimal id, string user);
+        Task Update(T entity, decimal id, string user);
         /// <summary>
         /// Permite borrar la entidad dada
         /// </summary>

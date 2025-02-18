@@ -27,7 +27,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task Create(Log entity)
+        public async Task Create(Log entity, string user)
         {
             try
             {
@@ -35,6 +35,7 @@ namespace OpenDataSigAPI.Data.Repositories
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
+                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -210,7 +211,7 @@ namespace OpenDataSigAPI.Data.Repositories
                 if (nuevoError.Descripcion.Length > 3000) { nuevoError.Descripcion = nuevoError.Descripcion.Substring(0, 3000); }
                 nuevoError.TipoLog = Constants.TiposLogs.FATAL;
 
-                await Create(nuevoError);
+                await Create(nuevoError, user);
             }
             catch (Exception)
             {
@@ -229,7 +230,7 @@ namespace OpenDataSigAPI.Data.Repositories
                 nuevoInfo.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
                 nuevoInfo.TipoLog = Constants.TiposLogs.INFO;
 
-                await Create(nuevoInfo);
+                await Create(nuevoInfo, user);
             }
             catch (Exception)
             {
@@ -246,10 +247,10 @@ namespace OpenDataSigAPI.Data.Repositories
             nuevoWarning.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
             nuevoWarning.TipoLog = Constants.TiposLogs.WARNING;
 
-            await Create(nuevoWarning);
+            await Create(nuevoWarning, user);
         }
 
-        public async Task LogError(string objeto, string metodo, string message, string descripcion)
+        public async Task LogError(string objeto, string metodo, string message, string descripcion, string user)
         {
             var nuevoWarning = new Log();
             nuevoWarning.Objeto = objeto.Length < 10 ? objeto : objeto.Substring(0, 10);
@@ -258,7 +259,7 @@ namespace OpenDataSigAPI.Data.Repositories
             nuevoWarning.Descripcion = descripcion.Length < 1000 ? descripcion : descripcion.Substring(0, 3000);
             nuevoWarning.TipoLog = Constants.TiposLogs.ERROR;
 
-            await Create(nuevoWarning);
+            await Create(nuevoWarning, user);
         }
     }
 }

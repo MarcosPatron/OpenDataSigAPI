@@ -1,7 +1,9 @@
-﻿using OpenDataSigAPI.Services.OpenDataSig;
+﻿using Microsoft.EntityFrameworkCore;
+using OpenDataSigAPI.Data.Context;
+using OpenDataSigAPI.Data.Repositories;
+using OpenDataSigAPI.Services.OpenDataSig;
 using Services.OpenAi;
 using Services.Functions.Farmacias;
-using OpenDataSigAPI.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,20 +12,36 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register services
+// Register DbContextFactory (IMPORTANTE)
+builder.Services.AddDbContextFactory<OpenDataSigAPIContext>(options =>
+{
+    options.UseOracle(builder.Configuration.GetConnectionString("AtencionUsuarios"));
+    options.LogTo(Console.WriteLine, new[] { DbLoggerCategory.Database.Command.Name }, LogLevel.Information);
+}, lifetime: ServiceLifetime.Transient);
+
+// Register repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAgentsRepository, AgentsRepository>();
+builder.Services.AddScoped<ILogsRepository, LogsRepository>();
+builder.Services.AddScoped<IMessagesRepository, MessagesRepository>();
+builder.Services.AddScoped<IRunsRepository, RunsRepository>();
+builder.Services.AddScoped<IThreadsRepository, ThreadsRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
+builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+
+// Register UnitOfWork
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register other services
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
 builder.Services.AddHttpClient<IFarmaciasService, FarmaciasService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

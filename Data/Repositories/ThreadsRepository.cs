@@ -27,7 +27,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task Create(OpenDataSigAPI.Data.Entities.Thread entity)
+        public async Task Create(Entities.Thread entity, string user)
         {
             try
             {
@@ -35,6 +35,7 @@ namespace OpenDataSigAPI.Data.Repositories
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
+                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();
@@ -105,7 +106,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAll()
+        public async Task<IEnumerable<Entities.Thread>> GetAll()
         {
             try
             {
@@ -118,7 +119,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllActive()
+        public async Task<IEnumerable<Entities.Thread>> GetAllActive()
         {
             try
             {
@@ -131,7 +132,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<OpenDataSigAPI.Data.Entities.Thread>> GetAllInactive()
+        public async Task<IEnumerable<Entities.Thread>> GetAllInactive()
         {
             try
             {
@@ -148,7 +149,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetById(decimal id)
+        public async Task<Entities.Thread> GetById(decimal id)
         {
             try
             {
@@ -161,7 +162,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id)
+        public async Task<Entities.Thread> GetThreadWithAttachmentsById(decimal id)
         {
             try
             {
@@ -182,7 +183,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
+        public async Task<Entities.Thread> GetThreadWithMessagesAndAttachmentsById(decimal id)
         {
             try
             {
@@ -211,7 +212,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<OpenDataSigAPI.Data.Entities.Thread> Reactivate(decimal id, string user)
+        public async Task<Entities.Thread> Reactivate(decimal id, string user)
         {
             try
             {
@@ -238,7 +239,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task Update(OpenDataSigAPI.Data.Entities.Thread entity, decimal id, string user)
+        public async Task Update(Entities.Thread entity, decimal id, string user)
         {
             try
             {
@@ -278,6 +279,15 @@ namespace OpenDataSigAPI.Data.Repositories
                 return thread?.IdThread ?? string.Empty;
             }
 
+        }
+
+        public async Task<decimal> GetThreadIdByIdThread(string IdThread)
+        {
+            using (var context = (OpenDataSigAPIContext)CreateDbContext())
+            {
+                var thread = await context.Threads.IgnoreQueryFilters().SingleOrDefaultAsync(t => t.IdThread == IdThread);
+                return thread?.Threadsid ?? 0;
+            }
         }
 
         public async Task<Entities.Thread> UpdateThreadStatusAndId(decimal threadId, string threadStatus, string idThread, string user)
@@ -323,7 +333,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, string threadDescription, string idThread, Message newMessage, Run newRun, string user)
+        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, string threadDescription, string idThread, Message newMessage, Run newRun)
         {
             using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
@@ -337,7 +347,6 @@ namespace OpenDataSigAPI.Data.Repositories
                 thread.CompletionTokens += newRun.CompletionTokens;
                 thread.TotalTokens += newRun.TotalTokens;
 
-                thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
                 thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
@@ -351,7 +360,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, List<Message> newMessages, Run newRun, List<Attachment> newFiles, string user)
+        public async Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, List<Message> newMessages, Run newRun)
         {
             using (var context = (OpenDataSigAPIContext)CreateDbContext())
             {
@@ -378,8 +387,6 @@ namespace OpenDataSigAPI.Data.Repositories
                 {
                     thread.TotalTokens += newRun.TotalTokens.Value;
                 }
-
-                thread.UsuarioUltimaModif = user;
                 thread.FechaUltimaModif = DateTime.Now;
                 thread.AccionUltimaModif = Constants.Operaciones.UPDATE;
 
@@ -394,11 +401,6 @@ namespace OpenDataSigAPI.Data.Repositories
                     context.Messages.Add(message);
                 }
 
-                foreach (var attachment in newFiles)
-                {
-                    attachment.ThreadId = threadId;
-                    context.Attachments.Add(attachment);
-                }
 
                 await context.SaveChangesAsync();
 
