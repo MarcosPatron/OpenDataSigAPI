@@ -15,9 +15,10 @@ namespace OpenDataSigAPI.Data.Repositories
         Task<Entities.Thread> GetThreadWithMessagesAndAttachmentsAndUserById(decimal id);
         Task<OpenDataSigAPI.Data.Entities.Thread> GetThreadWithAttachmentsById(decimal id);
         Task<string> GetIdThreadByThreadId(decimal threadId);
+        Task<decimal> GetThreadIdByIdThread(string IdThread);
         Task<Entities.Thread> UpdateThreadStatusAndId(decimal threadId, string threadStatus ,string IdThread, string user);
         Task<Entities.Thread> UpdateThreadStatusAndCreateMessage(decimal threadId, string threadStatus, Message newMessage, string user);
-        Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus,string threadDescription,string idThread, Message newMessage, Run NewRun, string user);
-        Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, List<Message> newMessages, Run NewRun,List<Attachment> newFiles, string user);
+        Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus,string threadDescription,string idThread, Message newMessage, Run NewRun);
+        Task<Entities.Thread> UpdateThreadAndCreateMessageAndCreateRun(decimal threadId, string threadStatus, List<Message> newMessages, Run NewRun);
     }
 }

@@ -26,7 +26,7 @@ namespace OpenDataSigAPI.Data.Repositories
             }
         }
 
-        public async Task Create(Message entity)
+        public async Task Create(Message entity, string user)
         {
             try
             {
@@ -34,6 +34,7 @@ namespace OpenDataSigAPI.Data.Repositories
 
                 if (entity.FechaAlta == DateTime.MinValue)
                     entity.FechaAlta = DateTime.Now;
+                entity.UsuarioCreacion = user;
 
                 await _context.AddAsync(entity);
                 await _context.SaveChangesAsync();

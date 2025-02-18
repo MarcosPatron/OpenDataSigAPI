@@ -16,46 +16,58 @@ namespace OpenDataSigAPI.Services.OpenDataSig
         private readonly IFarmaciasService _farmaciasService;
         private string farmaciasResponse;
 
-        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService)
+        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _openAiService = openAiService;
             _farmaciasService = farmaciasService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId)
         {
-            //COMPROBACIONES
-            //Mensaje no es vacío
+            // COMPROBACIONES
             if (string.IsNullOrWhiteSpace(message))
             {
-                await _unitOfWork.Logs.LogError(this.GetType().FullName, System.Reflection.MethodBase.GetCurrentMethod().Name, TiposErrores.MENSAJE_CLIENTE_VACIO, string.Empty);
+                await _unitOfWork.Logs.LogError(this.GetType().FullName, System.Reflection.MethodBase.GetCurrentMethod().Name, TiposErrores.MENSAJE_CLIENTE_VACIO, string.Empty, "usertest3"); // Usuario de pruebas Marcos
                 return new RespuestaMensajeOpenDataSig { Mensaje = "El mensaje llega vacío. Consulte con su administrador." };
             }
 
-
-            //PROCESAMIENTO
+            // PROCESAMIENTO
             var toolOutput = string.Empty;
             Shared.Models.OpenAi.Assistant.Response.Run runResponse;
+            bool isNewThread = string.IsNullOrWhiteSpace(threadId);
+            decimal userId = 42;  // Usuario de pruebas Marcos
+            decimal agentId = 11; // OpenDataSig 
+            decimal threadIdDB = 0;
 
-            if (string.IsNullOrWhiteSpace(threadId))
+
+            if (isNewThread)
             {
-                runResponse = await CreateThreadAndRun(message, "gpt-4o-mini", _configuration["IdAssistantFarmacias"]);
+                runResponse = await CreateThreadAndRun(message, "gpt-4o-mini", _configuration["IdAssistant"]);
                 threadId = runResponse.ThreadId;
+
+                // Guardar nuevo hilo en la BBDD
+                await SaveOrUpdateThreadDB(threadIdDB, threadId, "OpenAi", "PDTE_USER", "Nueva conversación", userId,
+                                           new List<Data.Entities.Message>(), agentId, "gpt-4o-mini",
+                                           0,0,0,
+                                           runResponse.Status,runResponse.Id);
+            }
+            else
+            {
+                threadIdDB = await _unitOfWork.Threads.GetThreadIdByIdThread(threadId);
+                runResponse = await CreateMessageAndRun(message, "gpt-4o-mini", _configuration["IdAssistant"], threadId);
             }
 
-            else
-                runResponse = await CreateMessageAndRun(message, "gpt-4o-mini", _configuration["IdAssistantFarmacias"], threadId);
-
             // Espero a que se procese la consulta
-            await checkResponseStatus(runResponse);
+            await checkResponseStatus(runResponse, threadId, userId, agentId, threadIdDB);
 
             var mensajes = await _openAiService.ListMessageAsync(threadId, null, null, null, null);
 
             return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value, ThreadId = runResponse.ThreadId };
         }
 
-        private async Task checkResponseStatus(Shared.Models.OpenAi.Assistant.Response.Run runResponse)
+        private async Task checkResponseStatus(Shared.Models.OpenAi.Assistant.Response.Run runResponse, string threadId, decimal userId, decimal agentId, decimal threadIdDB)
         {
             int reintentos = 30;
             int delay = 1000;
@@ -67,18 +79,20 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                 reintentos--;
 
                 if (reintentos % 10 == 0) // Aumenta el delay cada 10 intentos
-                    delay = Math.Min(delay * 2, 5000); // Maximo 5 segundos
+                    delay = Math.Min(delay * 2, 5000); // Máximo 5 segundos
 
                 runResponse = await _openAiService.RetrieveRunAsync(runResponse.ThreadId, runResponse.Id);
 
+                // ACTUALIZAR EL HILO EN LA BASE DE DATOS EN CADA ITERACIÓN
+                await SaveOrUpdateThreadDB(threadIdDB, threadId, "OpenAi", runResponse.Status, "Conversación en progreso", userId,
+                                           new List<Data.Entities.Message>(), agentId, "gpt-4o-mini",
+                                           runResponse.Usage.PromptTokens, runResponse.Usage.CompletionTokens, runResponse.Usage.TotalTokens,
+                                           runResponse.Status, runResponse.Id);
 
                 if (runResponse.Status.Equals("requires_action"))
                 {
-
                     var toolCall = runResponse.RequiredAction.SubmitToolOutputs.ToolCalls.FirstOrDefault();
-
                     var farmaciasResponse = await _farmaciasService.GetFarmaciasAsync();
-
                     string toolResponse = _farmaciasService.ParseData(farmaciasResponse);
 
                     var submitToolsOutputRequest = new SubmitToolOutputs()
@@ -86,11 +100,15 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                         ToolOutputs = new List<ToolOutputs>() { new ToolOutputs() { ToolCallId = toolCall.Id, Output = toolResponse } }
                     };
 
-                    Console.WriteLine(toolResponse);
-
                     runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
                 }
             }
+
+            // ACTUALIZAR EL HILO COMO COMPLETADO
+            await SaveOrUpdateThreadDB(threadIdDB, threadId, "OpenAi", "COMPLETED", "Conversación finalizada", userId,
+                                       new List<Data.Entities.Message>(), agentId, "gpt-4o-mini",
+                                       runResponse.Usage.PromptTokens, runResponse.Usage.CompletionTokens, runResponse.Usage.TotalTokens,
+                                       runResponse.Status, runResponse.Id);
         }
 
         private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateThreadAndRun(string message, string model, string assistantId)
@@ -115,5 +133,48 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             return await _openAiService.CreateRunAsync(createRun, threadId);
         }
 
+        private async Task<Data.Entities.Thread> SaveOrUpdateThreadDB(
+            decimal threadId, string idThreadProvider, string iaProvider, string threadStatus, string threadDescription, decimal userId,
+            List<Data.Entities.Message> listMessage, decimal agentId, string model, int promptTokens, int completionTokens, int totalTokens,
+            string runStatus, string runId)
+        {
+            var nuevoRun = new Data.Entities.Run()
+            {
+                AgentId = agentId,
+                PromptTokens = promptTokens,
+                CompletionTokens = completionTokens,
+                TotalTokens = totalTokens,
+                Status = runStatus,
+                IdRun = runId,
+                Model = model
+            };
+
+            if (threadId <= 0)
+            {
+                var nuevoThread = new Data.Entities.Thread
+                {
+                    UserId = userId,
+                    Provider = iaProvider,
+                    Status = threadStatus,
+                    IdThread = idThreadProvider,
+                    Description = threadDescription,
+                    CompletionTokens = completionTokens,
+                    PromptTokens = promptTokens,
+                    TotalTokens = totalTokens
+                };
+
+                listMessage.ForEach(m => nuevoThread.Messages.Add(m));
+                nuevoThread.Runs.Add(nuevoRun);
+
+                var agent = await _unitOfWork.Agents.GetById(agentId);
+
+                await _unitOfWork.Threads.Create(nuevoThread, agent.Nombre);
+                return nuevoThread;
+            }
+            else
+            {
+                return await _unitOfWork.Threads.UpdateThreadAndCreateMessageAndCreateRun(threadId, threadStatus, listMessage, nuevoRun);
+            }
+        }
     }
 }
