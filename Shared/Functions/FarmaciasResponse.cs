@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace Shared.Functions
 {
@@ -14,10 +9,10 @@ namespace Shared.Functions
         public string Type { get; set; }
 
         [JsonPropertyName("features")]
-        public List<Feature> FeatureList { get; set; }
+        public List<FeatureF> FeatureList { get; set; }
     }
 
-    public class Feature
+    public class FeatureF
     {
         [JsonPropertyName("type")]
         public string Type { get; set; }
@@ -26,26 +21,26 @@ namespace Shared.Functions
         public string Id { get; set; }
 
         [JsonPropertyName("geometry")]
-        public Geometry Geometry { get; set; }
+        public GeometryF Geometry { get; set; }
 
         [JsonPropertyName("geometry_name")]
         public string GeometryName { get; set; }
 
         [JsonPropertyName("properties")]
-        public PropertiesP Properties { get; set; }
+        public PropertiesF Properties { get; set; }
 
         [JsonPropertyName("bbox")]
         public List<double> Bbox { get; set; }
     }
 
-    public class Geometry
+    public class GeometryF
     {
         public string Type { get; set; }
 
         public List<List<double>> Coordinates { get; set; }
     }
 
-    public class PropertiesP
+    public class PropertiesF
     {
         [JsonPropertyName("nombretitu")]
         public string NombreTitu { get; set; }
