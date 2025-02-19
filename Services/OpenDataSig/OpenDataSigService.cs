@@ -16,7 +16,6 @@ namespace OpenDataSigAPI.Services.OpenDataSig
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOpenAiService _openAiService;
         private readonly IFarmaciasService _farmaciasService;
-        private string farmaciasResponse;
 
         public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IUnitOfWork unitOfWork)
         {
@@ -46,13 +45,13 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
             if (isNewThread)
             {
-                runResponse = await CreateThreadAndRun(message, "gpt-4o-mini", _configuration["IdAssistant"]);
+                runResponse = await CreateThreadAndRun(message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"]);
                 threadId = runResponse.ThreadId;
             }
             else
             {
                 threadIdDB = await _unitOfWork.Threads.GetThreadIdByIdThread(threadId);
-                runResponse = await CreateMessageAndRun(message, "gpt-4o-mini", _configuration["IdAssistant"], threadId);
+                runResponse = await CreateMessageAndRun(message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], threadId);
 
             }
 

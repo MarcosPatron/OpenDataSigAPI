@@ -7,8 +7,6 @@ namespace Services.Functions.Farmacias
     {
         Task<FarmaciasResponse> GetFarmaciasAsync();
 
-        Task<string> GetDatosAsync();
-
         string ParseData(FarmaciasResponse response);
     }
 }
