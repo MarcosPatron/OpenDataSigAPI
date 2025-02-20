@@ -14,7 +14,7 @@ namespace OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response
         }
     }
 
-    public class RetrievalTool : Tool
+    public class RetrievalTool : Tool 
     {
         public RetrievalTool()
         {

@@ -2,7 +2,10 @@
 using OpenDataSigAPI.Data.Repositories;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Request;
 using OpenDataSigAPI.Shared.Models.OpenAi.Assistant.Response;
+using Services.Functions.ContenedoresBasura;
+using Services.Functions.Desfibriladores;
 using Services.Functions.Farmacias;
+using Services.Functions.PlazasMovilidadReducida;
 using Services.OpenAi;
 using Shared.OpenDataSig;
 using static Shared.Constants;
@@ -16,12 +19,18 @@ namespace OpenDataSigAPI.Services.OpenDataSig
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOpenAiService _openAiService;
         private readonly IFarmaciasService _farmaciasService;
+        private readonly IDesfibriladoresService _desfibriladoresService;
+        private readonly IPlazasMovilidadReducidaService _plazasMovilidadReducidaService;
+        private readonly IContenedoresBasuraService _contenedoresBasuraService;
 
-        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IUnitOfWork unitOfWork)
+        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IDesfibriladoresService desfibriladoresService, IPlazasMovilidadReducidaService plazasMovilidadReducidaService, IContenedoresBasuraService contenedoresBasuraService, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _openAiService = openAiService;
             _farmaciasService = farmaciasService;
+            _desfibriladoresService = desfibriladoresService;
+            _plazasMovilidadReducidaService = plazasMovilidadReducidaService;
+            _contenedoresBasuraService = contenedoresBasuraService;
             _unitOfWork = unitOfWork;
         }
 
@@ -82,16 +91,56 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
                 if (runResponse.Status.Equals("requires_action"))
                 {
-                    var toolCall = runResponse.RequiredAction.SubmitToolOutputs.ToolCalls.FirstOrDefault();
-                    var farmaciasResponse = await _farmaciasService.GetFarmaciasAsync();
-                    string toolResponse = _farmaciasService.ParseData(farmaciasResponse);
+                    var toolResponses = new List<ToolOutputs>();
 
-                    var submitToolsOutputRequest = new SubmitToolOutputs()
+                    foreach (var toolCall in runResponse.RequiredAction.SubmitToolOutputs.ToolCalls)
                     {
-                        ToolOutputs = new List<ToolOutputs>() { new ToolOutputs() { ToolCallId = toolCall.Id, Output = toolResponse } }
-                    };
+                        string toolResponse = string.Empty;
 
-                    runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
+                        switch (toolCall.Function.Name)
+                        {
+                            case "Farmacias":
+                                var farmaciasResponse = await _farmaciasService.GetFarmaciasAsync();
+                                toolResponse = _farmaciasService.ParseData(farmaciasResponse);
+                                break;
+
+                            case "Desfibriladores":
+                                var desfibriladoresResponse = await _desfibriladoresService.GetDesfibriladoresAsync();
+                                toolResponse = _desfibriladoresService.ParseData(desfibriladoresResponse);
+                                break;
+
+                            case "Plazas_Movilidad_Reducida":
+                                var plazasMovilidadReducidaResponse = await _plazasMovilidadReducidaService.GetPlazasMovilidadReducidaAsync();
+                                toolResponse = _plazasMovilidadReducidaService.ParseData(plazasMovilidadReducidaResponse);
+                                break;
+
+                            case "Contenedores_Basura":
+                                var contenedoresBasuraResponse = await _contenedoresBasuraService.GetContenedoresBasuraAsync();
+                                toolResponse = _contenedoresBasuraService.ParseData(contenedoresBasuraResponse);
+                                break;
+                        }
+
+                        // Solo agrega la respuesta si se procesó correctamente
+                        if (!string.IsNullOrEmpty(toolResponse))
+                        {
+                            toolResponses.Add(new ToolOutputs()
+                            {
+                                ToolCallId = toolCall.Id,
+                                Output = toolResponse
+                            });
+                        }
+                    }
+
+                    // Enviar todas las respuestas en una sola llamada
+                    if (toolResponses.Any())
+                    {
+                        var submitToolsOutputRequest = new SubmitToolOutputs()
+                        {
+                            ToolOutputs = toolResponses
+                        };
+
+                        runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
+                    }
                 }
             }
 

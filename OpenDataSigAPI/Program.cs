@@ -4,6 +4,9 @@ using OpenDataSigAPI.Data.Repositories;
 using OpenDataSigAPI.Services.OpenDataSig;
 using Services.OpenAi;
 using Services.Functions.Farmacias;
+using Services.Functions.ContenedoresBasura;
+using Services.Functions.PlazasMovilidadReducida;
+using Services.Functions.Desfibriladores;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +39,10 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Register other services
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
+builder.Services.AddHttpClient<IContenedoresBasuraService, ContenedoresBasuraService>();
 builder.Services.AddHttpClient<IFarmaciasService, FarmaciasService>();
+builder.Services.AddHttpClient<IPlazasMovilidadReducidaService, PlazasMovilidadReducidaService>();
+builder.Services.AddHttpClient<IDesfibriladoresService, DesfibriladoresService>();
 
 var app = builder.Build();
 

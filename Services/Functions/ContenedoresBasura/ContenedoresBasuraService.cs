@@ -20,7 +20,7 @@ namespace Services.Functions.ContenedoresBasura
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(_configuration["URL_API:ContenedoresBasura"]);
+                HttpResponseMessage response = await _httpClient.GetAsync(_configuration["URL_APIs:ContenedoresBasura"]);
                 response.EnsureSuccessStatusCode();
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 // Deserializar JSON con System.Text.Json
@@ -42,7 +42,7 @@ namespace Services.Functions.ContenedoresBasura
             StringBuilder datos = new StringBuilder();
 
             // Encabezados
-            datos.AppendLine("nombre,direccion,horario,telefono,latitud,longitud");
+            datos.AppendLine("tipo,estado,latitud,longitud");
 
             // Recorrer cada farmacia
             foreach (var feature in response.FeaturesList)
