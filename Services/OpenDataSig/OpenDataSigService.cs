@@ -51,7 +51,6 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             decimal agentId = 11; // OpenDataSig 
             decimal threadIdDB = 0;
 
-
             if (isNewThread)
             {
                 runResponse = await CreateThreadAndRun(message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"]);
@@ -120,7 +119,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                                 break;
                         }
 
-                        // Solo agrega la respuesta si se procesó correctamente
+                        // Agrega la respuesta si se proceso correctamente
                         if (!string.IsNullOrEmpty(toolResponse))
                         {
                             toolResponses.Add(new ToolOutputs()
@@ -131,7 +130,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                         }
                     }
 
-                    // Enviar todas las respuestas en una sola llamada
+                    // Enviar todas las respuestas
                     if (toolResponses.Any())
                     {
                         var submitToolsOutputRequest = new SubmitToolOutputs()
@@ -142,9 +141,16 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                         runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
                     }
                 }
+                //El run no se ha podido completar
+                else if (runResponse.Status.Equals("expired") || runResponse.Status.Equals("cancelled") ||
+                    runResponse.Status.Equals("failed") || runResponse.Status.Equals("incomplete") || reintentos == 0)
+                {
+                    //Devuelvo el mensaje con el error
+                    throw new Exception("En estos momentos el asistente no está disponible. Inténtalo de nuevo más adelante.");
+                }
             }
 
-            //Llamo a listMessage y recupero los dos último mensajes
+            // Llamo a listMessage y recupero los dos últimos mensajes
             var listaMessageResponse = await _openAiService.ListMessageAsync(runResponse.ThreadId, order: "desc", limit: 2);
             var lastMessage = listaMessageResponse.Messages.First().Content[0].Text.Value;
 

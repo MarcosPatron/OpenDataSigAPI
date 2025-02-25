@@ -2,27 +2,27 @@
 using OpenDataSigAPI.Data.Context;
 using OpenDataSigAPI.Data.Repositories;
 using OpenDataSigAPI.Services.OpenDataSig;
-using Services.OpenAi;
-using Services.Functions.Farmacias;
 using Services.Functions.ContenedoresBasura;
-using Services.Functions.PlazasMovilidadReducida;
 using Services.Functions.Desfibriladores;
+using Services.Functions.Farmacias;
+using Services.Functions.PlazasMovilidadReducida;
+using Services.OpenAi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Servicios
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register DbContextFactory (IMPORTANTE)
+// DbContextFactory
 builder.Services.AddDbContextFactory<OpenDataSigAPIContext>(options =>
 {
     options.UseOracle(builder.Configuration.GetConnectionString("AtencionUsuarios"));
     options.LogTo(Console.WriteLine, new[] { DbLoggerCategory.Database.Command.Name }, LogLevel.Information);
 }, lifetime: ServiceLifetime.Transient);
 
-// Register repositories
+// Repositorios
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAgentsRepository, AgentsRepository>();
 builder.Services.AddScoped<ILogsRepository, LogsRepository>();
@@ -33,10 +33,10 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 
-// Register UnitOfWork
+// UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Register other services
+// Otros Servicios
 builder.Services.AddScoped<IOpenAiService, OpenAiService>();
 builder.Services.AddScoped<IOpenDataSigService, OpenDataSigService>();
 builder.Services.AddHttpClient<IContenedoresBasuraService, ContenedoresBasuraService>();
