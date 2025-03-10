@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OpenDataSigAPI.Services.OpenDataSig;
 using Services.OpenAi;
+using Shared.OpenDataSig;
 
 
 namespace OpenDataSigAPI.Controllers
@@ -123,7 +124,7 @@ namespace OpenDataSigAPI.Controllers
         */
 
         [HttpPost("sendMessage")]
-        public async Task<IActionResult> CreateMessage([FromBody] string request, string? threadId)
+        public async Task<IActionResult> CreateMessage([FromBody] RequestMessageOpenDataSig request)
         {
             if (request == null)
             {
@@ -132,7 +133,7 @@ namespace OpenDataSigAPI.Controllers
 
             try
             {
-                var message = await _openDataSigService.ManageMessageUi(request, threadId);
+                var message = await _openDataSigService.ManageMessageUi(request);
 
                 return Ok(message);
             }
@@ -157,6 +158,7 @@ namespace OpenDataSigAPI.Controllers
                 return NotFound(new { error = "Mensaje no encontrado" });
             }
         }
+        */
 
         [HttpGet("listMessage/{threadId}")]
         public async Task<IActionResult> ListMessage(string OpenAI_ApiKey, string threadId, int? limit, string? order, string? after, string? before)
@@ -173,6 +175,8 @@ namespace OpenDataSigAPI.Controllers
             }
             
         }
+
+        /*
          [HttpPost("SubmitToolOutputs/{threadId}/{runId}")]
         public async Task<IActionResult> SubmitToolOutputs(
             [FromRoute] string threadId,                                   

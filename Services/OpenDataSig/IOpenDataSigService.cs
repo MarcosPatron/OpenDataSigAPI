@@ -4,6 +4,6 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 {
     public interface IOpenDataSigService
     {
-        Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId);
+        Task<RespuestaMensajeOpenDataSig> ManageMessageUi(RequestMessageOpenDataSig message);
     }
 }

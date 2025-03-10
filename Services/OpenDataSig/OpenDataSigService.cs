@@ -34,10 +34,10 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<RespuestaMensajeOpenDataSig> ManageMessageUi(string message, string? threadId)
+        public async Task<RespuestaMensajeOpenDataSig> ManageMessageUi(RequestMessageOpenDataSig request)
         {
             // COMPROBACIONES
-            if (string.IsNullOrWhiteSpace(message))
+            if (request.Message == null)
             {
                 await _unitOfWork.Logs.LogError(this.GetType().FullName, System.Reflection.MethodBase.GetCurrentMethod().Name, TiposErrores.MENSAJE_CLIENTE_VACIO, string.Empty, "usertest3"); // Usuario de pruebas Marcos
                 return new RespuestaMensajeOpenDataSig { Mensaje = "El mensaje llega vacío. Consulte con su administrador." };
@@ -46,28 +46,28 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             // PROCESAMIENTO
             var toolOutput = string.Empty;
             Shared.Models.OpenAi.Assistant.Response.Run runResponse;
-            bool isNewThread = string.IsNullOrWhiteSpace(threadId);
+            bool isNewThread = string.IsNullOrWhiteSpace(request.ThreadId);
             decimal userId = 42;  // Usuario de pruebas Marcos
             decimal agentId = 11; // OpenDataSig 
             decimal threadIdDB = 0;
 
             if (isNewThread)
             {
-                runResponse = await CreateThreadAndRun(message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"]);
-                threadId = runResponse.ThreadId;
+                runResponse = await CreateThreadAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"]);
+                request.ThreadId = runResponse.ThreadId;
             }
             else
             {
-                threadIdDB = await _unitOfWork.Threads.GetThreadIdByIdThread(threadId);
-                runResponse = await CreateMessageAndRun(message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], threadId);
+                threadIdDB = await _unitOfWork.Threads.GetThreadIdByIdThread(request.ThreadId);
+                runResponse = await CreateMessageAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], request.ThreadId);
 
             }
 
             // Espero a que se procese la consulta
-            await checkResponseStatus(runResponse, threadId, userId, agentId, threadIdDB);
+            await checkResponseStatus(runResponse, request.ThreadId, userId, agentId, threadIdDB);
 
 
-            var mensajes = await _openAiService.ListMessageAsync(threadId, null, null, null, null);
+            var mensajes = await _openAiService.ListMessageAsync(request.ThreadId, null, null, null, null);
 
             return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value, ThreadId = runResponse.ThreadId };
         }
