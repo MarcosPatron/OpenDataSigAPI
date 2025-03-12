@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Services.Functions.PlazasMovilidadReducida
 {
-    public class PlazasMovilidadReducidaService
+    public class PlazasMovilidadReducidaService : IPlazasMovilidadReducidaService
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;

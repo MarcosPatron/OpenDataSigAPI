@@ -47,7 +47,7 @@ namespace Services.Functions.Desfibriladores
             foreach (var feature in desfibriladores.Features)
             {
                 var properties = feature.Properties;
-                datos.Append("\"").Append(feature.Type).Append("\"");
+                datos.Append("\"").Append(feature.Geometry.Type).Append("\"");
                 datos.Append(",\"").Append(properties.Situacion).Append("\"");
                 datos.Append(",\"").Append(properties.Descripcion).Append("\"");
                 datos.Append(",\"").Append(properties.Direccion).Append("\"");
@@ -56,7 +56,7 @@ namespace Services.Functions.Desfibriladores
                 datos.AppendLine();
             }
 
-            Console.WriteLine(datos.ToString());
+            Console.WriteLine("Datos desfibrilador recibidos");
 
             return datos.ToString();
         }

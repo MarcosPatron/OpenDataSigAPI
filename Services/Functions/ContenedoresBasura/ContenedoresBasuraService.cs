@@ -3,6 +3,9 @@ using Shared.Functions;
 using System.Text;
 using System.Text.Json;
 
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
+
 namespace Services.Functions.ContenedoresBasura
 {
     public class ContenedoresBasuraService : IContenedoresBasuraService // No se la he pasado al Asistente
@@ -20,7 +23,7 @@ namespace Services.Functions.ContenedoresBasura
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(_configuration["URL_API:ContenedoresBasura"]);
+                HttpResponseMessage response = await _httpClient.GetAsync(_configuration["URL_APIs:ContenedoresBasura"]);
                 response.EnsureSuccessStatusCode();
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 // Deserializar JSON con System.Text.Json
@@ -42,17 +45,36 @@ namespace Services.Functions.ContenedoresBasura
             StringBuilder datos = new StringBuilder();
 
             // Encabezados
-            datos.AppendLine("nombre,direccion,horario,telefono,latitud,longitud");
+            datos.AppendLine("tipo,estado,latitud,longitud");
 
-            // Recorrer cada farmacia
+            // Definir sistema de coordenadas de origen (ETRS89 UTM Zone 29N)
+            var sourceCS = ProjectedCoordinateSystem.WGS84_UTM(29, true);
+
+            // Definir sistema de coordenadas de destino (WGS84 Lat/Lon)
+            var targetCS = GeographicCoordinateSystem.WGS84;
+
+            // Crear transformador de coordenadas
+            var transformFactory = new CoordinateTransformationFactory();
+            var transformation = transformFactory.CreateFromCoordinateSystems(sourceCS, targetCS);
+
+
+
+            // Recorrer cada contenedor
             foreach (var feature in response.FeaturesList)
             {
+
                 var properties = feature.Properties;
+
+                double x = feature.Geometry.Coordinates[0]; // Este (E)
+                double y = feature.Geometry.Coordinates[1]; // Norte (N)
+
+                // Transformar coordenadas
+                double[] result = transformation.MathTransform.Transform(new double[] { x, y });
 
                 datos.Append(",\"").Append(properties.Tipo).Append("\"");
                 datos.Append(",\"").Append(properties.Estado).Append("\"");
-                datos.Append(",\"").Append(feature.Geometry.Coordinates[0]).Append("\"");
-                datos.Append(",\"").Append(feature.Geometry.Coordinates[1]).Append("\"");
+                datos.Append(",\"").Append(result[0]).Append("\"");
+                datos.Append(",\"").Append(result[1]).Append("\"");
                 datos.AppendLine();
             }
 

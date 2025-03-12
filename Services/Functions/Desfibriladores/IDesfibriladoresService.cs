@@ -2,7 +2,7 @@
 
 namespace Services.Functions.Desfibriladores
 {
-    interface IDesfibriladoresService
+    public interface IDesfibriladoresService
     {
         Task<DesfibriladoresResponse> GetDesfibriladoresAsync();
         string ParseData(DesfibriladoresResponse response);

@@ -94,5 +94,5 @@ namespace Shared.Functions
         [JsonPropertyName("id")]
         public int Id { get; set; }
     }
-}
+
 }
