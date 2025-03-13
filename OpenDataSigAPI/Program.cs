@@ -6,6 +6,7 @@ using Services.Functions.ContenedoresBasura;
 using Services.Functions.Desfibriladores;
 using Services.Functions.Farmacias;
 using Services.Functions.PlazasMovilidadReducida;
+using Services.Functions.PuntoLimpio;
 using Services.OpenAi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,7 @@ builder.Services.AddHttpClient<IContenedoresBasuraService, ContenedoresBasuraSer
 builder.Services.AddHttpClient<IFarmaciasService, FarmaciasService>();
 builder.Services.AddHttpClient<IPlazasMovilidadReducidaService, PlazasMovilidadReducidaService>();
 builder.Services.AddHttpClient<IDesfibriladoresService, DesfibriladoresService>();
+builder.Services.AddHttpClient<IPuntosLimpiosService, PuntosLimpiosService>();
 
 var app = builder.Build();
 

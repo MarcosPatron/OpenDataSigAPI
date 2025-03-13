@@ -6,6 +6,7 @@ using Services.Functions.ContenedoresBasura;
 using Services.Functions.Desfibriladores;
 using Services.Functions.Farmacias;
 using Services.Functions.PlazasMovilidadReducida;
+using Services.Functions.PuntoLimpio;
 using Services.OpenAi;
 using Shared.OpenDataSig;
 using static Shared.Constants;
@@ -22,8 +23,11 @@ namespace OpenDataSigAPI.Services.OpenDataSig
         private readonly IDesfibriladoresService _desfibriladoresService;
         private readonly IPlazasMovilidadReducidaService _plazasMovilidadReducidaService;
         private readonly IContenedoresBasuraService _contenedoresBasuraService;
+        private readonly IPuntosLimpiosService _puntosLimpiosService;
 
-        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IDesfibriladoresService desfibriladoresService, IPlazasMovilidadReducidaService plazasMovilidadReducidaService, IContenedoresBasuraService contenedoresBasuraService, IUnitOfWork unitOfWork)
+        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService,
+            IDesfibriladoresService desfibriladoresService, IPlazasMovilidadReducidaService plazasMovilidadReducidaService,
+            IContenedoresBasuraService contenedoresBasuraService, IPuntosLimpiosService puntosLimpiosService, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _openAiService = openAiService;
@@ -31,6 +35,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             _desfibriladoresService = desfibriladoresService;
             _plazasMovilidadReducidaService = plazasMovilidadReducidaService;
             _contenedoresBasuraService = contenedoresBasuraService;
+            _puntosLimpiosService = puntosLimpiosService;
             _unitOfWork = unitOfWork;
         }
 
@@ -116,6 +121,10 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                             case "Contenedores_Basura":
                                 var contenedoresBasuraResponse = await _contenedoresBasuraService.GetContenedoresBasuraAsync();
                                 toolResponse = _contenedoresBasuraService.ParseData(contenedoresBasuraResponse);
+                                break;
+                            case "Puntos_Limpios":
+                                var puntosLimpiosResponse = await _puntosLimpiosService.GetPuntosLimpiosAsync();
+                                toolResponse = _puntosLimpiosService.ParseData(puntosLimpiosResponse);
                                 break;
                         }
 
