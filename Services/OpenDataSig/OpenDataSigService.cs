@@ -6,6 +6,7 @@ using Services.Functions.ContenedoresBasura;
 using Services.Functions.Desfibriladores;
 using Services.Functions.Farmacias;
 using Services.Functions.PlazasMovilidadReducida;
+using Services.Functions.PuntoLimpio;
 using Services.OpenAi;
 using Shared.OpenDataSig;
 using static Shared.Constants;
@@ -22,8 +23,11 @@ namespace OpenDataSigAPI.Services.OpenDataSig
         private readonly IDesfibriladoresService _desfibriladoresService;
         private readonly IPlazasMovilidadReducidaService _plazasMovilidadReducidaService;
         private readonly IContenedoresBasuraService _contenedoresBasuraService;
+        private readonly IPuntosLimpiosService _puntosLimpiosService;
 
-        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService, IDesfibriladoresService desfibriladoresService, IPlazasMovilidadReducidaService plazasMovilidadReducidaService, IContenedoresBasuraService contenedoresBasuraService, IUnitOfWork unitOfWork)
+        public OpenDataSigService(IConfiguration configuration, IOpenAiService openAiService, IFarmaciasService farmaciasService,
+            IDesfibriladoresService desfibriladoresService, IPlazasMovilidadReducidaService plazasMovilidadReducidaService,
+            IContenedoresBasuraService contenedoresBasuraService, IPuntosLimpiosService puntosLimpiosService, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _openAiService = openAiService;
@@ -31,6 +35,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             _desfibriladoresService = desfibriladoresService;
             _plazasMovilidadReducidaService = plazasMovilidadReducidaService;
             _contenedoresBasuraService = contenedoresBasuraService;
+            _puntosLimpiosService = puntosLimpiosService;
             _unitOfWork = unitOfWork;
         }
 
@@ -53,13 +58,13 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
             if (isNewThread)
             {
-                runResponse = await CreateThreadAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"]);
+                runResponse = await CreateThreadAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], request.Coordinates);
                 request.ThreadId = runResponse.ThreadId;
             }
             else
             {
                 threadIdDB = await _unitOfWork.Threads.GetThreadIdByIdThread(request.ThreadId);
-                runResponse = await CreateMessageAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], request.ThreadId);
+                runResponse = await CreateMessageAndRun(request.Message, _configuration["ModelosOpenAi:gpt-4o-mini"], _configuration["IdAssistant"], request.ThreadId, request.Coordinates);
 
             }
 
@@ -117,6 +122,10 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                                 var contenedoresBasuraResponse = await _contenedoresBasuraService.GetContenedoresBasuraAsync();
                                 toolResponse = _contenedoresBasuraService.ParseData(contenedoresBasuraResponse);
                                 break;
+                            case "Puntos_Limpios":
+                                var puntosLimpiosResponse = await _puntosLimpiosService.GetPuntosLimpiosAsync();
+                                toolResponse = _puntosLimpiosService.ParseData(puntosLimpiosResponse);
+                                break;
                         }
 
                         // Agrega la respuesta si se proceso correctamente
@@ -161,11 +170,12 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                                       runResponse.Status, runResponse.Id);
         }
 
-        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateThreadAndRun(string message, string model, string assistantId)
+        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateThreadAndRun(string message, string model, string assistantId, List<double> coordenadas)
         {
             var createMessageAndRun = new CreateThreadAndRun();
             createMessageAndRun.AssistantId = assistantId;
             createMessageAndRun.Model = model;
+            createMessageAndRun.Instructions = GetInstructions(coordenadas);
             createMessageAndRun.Thread = new CreateThread()
             {
                 Messages = new List<CreateMessage>() { new CreateMessage() { Role = "user", Content = message } }
@@ -174,12 +184,34 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             return await _openAiService.CreateThreadAndRunAsync(createMessageAndRun);
         }
 
-        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId)
+        private String GetInstructions(List<double> coordenadas)
+        {
+            string filePath = "D:\\Users\\marcos.patron\\source\\repos\\OpenDataSigAPI\\Data\\Files\\instructions.txt";
+            string content = string.Empty;
+            if (System.IO.File.Exists(filePath))
+            {
+                content = System.IO.File.ReadAllText(filePath);
+                Console.WriteLine(content);
+                content += "Ubicacion del asistente: Tu posición actual es " + string.Join(",", coordenadas) + ". Puedes darle esta informacion al usuario\n";
+            }
+            else
+            {
+                Console.WriteLine("El archivo no existe.");
+            }
+            DateTime fechaHoraActual = DateTime.Now;
+
+
+            content += "Fecha y hora acualmente: " + fechaHoraActual.ToString("yyyy/MM/dd HH:mm:ss") + ".Puedes darle esta informacion al usuario\n";
+
+            return content;
+        }
+
+        private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId, List<double> coordinates)
         {
             var createMessageRequest = new CreateMessage() { Role = "user", Content = message };
             await _openAiService.CreateMessageAsync(createMessageRequest, threadId);
 
-            var createRun = new CreateRun() { AssistantId = assistantId, Model = model };
+            var createRun = new CreateRun() { AssistantId = assistantId, Model = model , Instructions = GetInstructions(coordinates)};
             return await _openAiService.CreateRunAsync(createRun, threadId);
         }
 
