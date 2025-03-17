@@ -149,6 +149,8 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
                         runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
                     }
+                    reintentos = 30;
+                    delay = 1000;
                 }
                 //El run no se ha podido completar
                 else if (runResponse.Status.Equals("expired") || runResponse.Status.Equals("cancelled") ||
@@ -156,6 +158,8 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                 {
                     //Devuelvo el mensaje con el error
                     throw new Exception("En estos momentos el asistente no está disponible. Inténtalo de nuevo más adelante.");
+                    reintentos = 30;
+                    delay = 1000;
                 }
             }
 
@@ -175,10 +179,10 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             var createMessageAndRun = new CreateThreadAndRun();
             createMessageAndRun.AssistantId = assistantId;
             createMessageAndRun.Model = model;
-            createMessageAndRun.Instructions = GetInstructions(coordenadas);
+            //createMessageAndRun.Instructions = GetInstructions(coordenadas);
             createMessageAndRun.Thread = new CreateThread()
             {
-                Messages = new List<CreateMessage>() { new CreateMessage() { Role = "user", Content = message } }
+                Messages = new List<CreateMessage>() { new CreateMessage() { Role = "user", Content = message + GetInstructions(coordenadas) } }
             };
 
             return await _openAiService.CreateThreadAndRunAsync(createMessageAndRun);
@@ -192,7 +196,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             {
                 content = System.IO.File.ReadAllText(filePath);
                 Console.WriteLine(content);
-                content += "Ubicacion del usuario: La posición actual es " + string.Join(",", coordenadas) + ". No le proporciones las coordenadas a el usuario\n";
+                content += "Mi ubicacion:" + string.Join(",", coordenadas) + ". No le proporciones las coordenadas a el usuario\n";
             }
             else
             {
@@ -208,10 +212,10 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
         private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId, List<double> coordinates)
         {
-            var createMessageRequest = new CreateMessage() { Role = "user", Content = message };
+            var createMessageRequest = new CreateMessage() { Role = "user", Content = message + GetInstructions(coordinates)};
             await _openAiService.CreateMessageAsync(createMessageRequest, threadId);
 
-            var createRun = new CreateRun() { AssistantId = assistantId, Model = model , Instructions = GetInstructions(coordinates)};
+            var createRun = new CreateRun() { AssistantId = assistantId, Model = model};
             return await _openAiService.CreateRunAsync(createRun, threadId);
         }
 
