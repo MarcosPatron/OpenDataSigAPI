@@ -192,7 +192,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             {
                 content = System.IO.File.ReadAllText(filePath);
                 Console.WriteLine(content);
-                content += "Ubicacion del asistente: Tu posición actual es " + string.Join(",", coordenadas) + ". Puedes darle esta informacion al usuario\n";
+                content += "Ubicacion del usuario: La posición actual es " + string.Join(",", coordenadas) + ". No le proporciones las coordenadas a el usuario\n";
             }
             else
             {
@@ -201,7 +201,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             DateTime fechaHoraActual = DateTime.Now;
 
 
-            content += "Fecha y hora acualmente: " + fechaHoraActual.ToString("yyyy/MM/dd HH:mm:ss") + ".Puedes darle esta informacion al usuario\n";
+            content += "Fecha y hora acualmente: " + fechaHoraActual.ToString("yyyy/MM/dd HH:mm:ss") + "\n";
 
             return content;
         }
