@@ -77,6 +77,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             return new RespuestaMensajeOpenDataSig { Mensaje = mensajes.Messages[0].Content[0].Text.Value, ThreadId = runResponse.ThreadId };
         }
 
+        // Comprobar estado de la respuesta
         private async Task checkResponseStatus(Shared.Models.OpenAi.Assistant.Response.Run runResponse, string threadId, decimal userId, decimal agentId, decimal threadIdDB)
         {
             int reintentos = 30;
@@ -101,6 +102,7 @@ namespace OpenDataSigAPI.Services.OpenDataSig
                     {
                         string toolResponse = string.Empty;
 
+                        // Llamada a las funciones por nombre
                         switch (toolCall.Function.Name)
                         {
                             case "Farmacias":
@@ -149,21 +151,18 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
                         runResponse = await _openAiService.SubmitToolOutputsAsync(submitToolsOutputRequest, runResponse.ThreadId, runResponse.Id);
                     }
-                    reintentos = 30;
-                    delay = 1000;
                 }
-                //El run no se ha podido completar
+                //El run no se ha completado
                 else if (runResponse.Status.Equals("expired") || runResponse.Status.Equals("cancelled") ||
-                    runResponse.Status.Equals("failed") || runResponse.Status.Equals("incomplete") || reintentos == 0)
+                    runResponse.Status.Equals("failed") || runResponse.Status.Equals("incomplete") || reintentos <= 0)
                 {
                     //Devuelvo el mensaje con el error
                     throw new Exception("En estos momentos el asistente no está disponible. Inténtalo de nuevo más adelante.");
-                    reintentos = 30;
-                    delay = 1000;
                 }
             }
 
-            // Llamo a listMessage y recupero los dos últimos mensajes
+
+            // Llamo a listMessage y recupero los dos ultimos mensajes
             var listaMessageResponse = await _openAiService.ListMessageAsync(runResponse.ThreadId, order: "desc", limit: 2);
             var lastMessage = listaMessageResponse.Messages.First().Content[0].Text.Value;
 
@@ -179,7 +178,6 @@ namespace OpenDataSigAPI.Services.OpenDataSig
             var createMessageAndRun = new CreateThreadAndRun();
             createMessageAndRun.AssistantId = assistantId;
             createMessageAndRun.Model = model;
-            //createMessageAndRun.Instructions = GetInstructions(coordenadas);
             createMessageAndRun.Thread = new CreateThread()
             {
                 Messages = new List<CreateMessage>() { new CreateMessage() { Role = "user", Content = message + GetInstructions(coordenadas) } }
@@ -190,32 +188,26 @@ namespace OpenDataSigAPI.Services.OpenDataSig
 
         private String GetInstructions(List<double> coordenadas)
         {
-            string filePath = "D:\\Users\\marcos.patron\\source\\repos\\OpenDataSigAPI\\Data\\Files\\instructions.txt";
             string content = string.Empty;
-            if (System.IO.File.Exists(filePath))
-            {
-                content = System.IO.File.ReadAllText(filePath);
-                Console.WriteLine(content);
-                content += "Mi ubicacion:" + string.Join(",", coordenadas) + ". No le proporciones las coordenadas a el usuario\n";
-            }
-            else
-            {
-                Console.WriteLine("El archivo no existe.");
-            }
+
             DateTime fechaHoraActual = DateTime.Now;
 
-
-            content += "Fecha y hora acualmente: " + fechaHoraActual.ToString("yyyy/MM/dd HH:mm:ss") + "\n";
-
-            return content;
+            return $"\nMi ubicación: {string.Join(",", coordenadas)}. No le proporciones las coordenadas al usuario.\n" +
+                   $"Fecha y hora actualmente: {DateTime.Now:yyyy/MM/dd HH:mm:ss}\n";
+    
         }
-
         private async Task<Shared.Models.OpenAi.Assistant.Response.Run> CreateMessageAndRun(string message, string model, string assistantId, string threadId, List<double> coordinates)
         {
             var createMessageRequest = new CreateMessage() { Role = "user", Content = message + GetInstructions(coordinates)};
-            await _openAiService.CreateMessageAsync(createMessageRequest, threadId);
 
-            var createRun = new CreateRun() { AssistantId = assistantId, Model = model};
+            var messageResponse = await _openAiService.CreateMessageAsync(createMessageRequest, threadId);
+
+            if (messageResponse == null || string.IsNullOrEmpty(messageResponse.Id))
+            {
+                throw new Exception("Error al enviar mensaje a OpenAI.");
+            }
+
+            var createRun = new CreateRun() { AssistantId = assistantId, Model = model };
             return await _openAiService.CreateRunAsync(createRun, threadId);
         }
 
