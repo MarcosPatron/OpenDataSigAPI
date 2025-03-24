@@ -65,8 +65,8 @@ namespace Services.Functions.ContenedoresBasura
 
                 var properties = feature.Properties;
 
-                double x = feature.Geometry.Coordinates[0]; // Este (E)
-                double y = feature.Geometry.Coordinates[1]; // Norte (N)
+                double x = feature.Geometry.Coordinates[0];
+                double y = feature.Geometry.Coordinates[1]; 
 
                 // Transformar coordenadas
                 double[] result = transformation.MathTransform.Transform(new double[] { x, y });
@@ -77,8 +77,6 @@ namespace Services.Functions.ContenedoresBasura
                 datos.Append(",\"").Append(result[1]).Append("\"");
                 datos.AppendLine();
             }
-
-            Console.WriteLine(datos.ToString());
 
             return datos.ToString();
         }
